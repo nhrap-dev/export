@@ -22,7 +22,7 @@ hazpy_version_url = config[release]['hazpyInitUrl']
 tool_version_url = config[release]['toolInitUrl']
 tool_zipfile_url = config[release]['repoZipfileUrl']
 tool_version_local = './src/__init__.py'
-conda_env = 'hazpy_env'
+conda_env = config['virtualEnvironment']
 if release == 'prod':
     conda_channel = 'nhrap'
 if release == 'dev':
