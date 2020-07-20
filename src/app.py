@@ -20,6 +20,10 @@ import json
 
 
 class App():
+    # TODO update tab through menu
+    # TODO update output directory auto change
+    # TODO add more progress steps
+    # TODO building count in buildingDamageByType looks high! check fail2
     def __init__(self):
         # Create app
         self.root = tk.Tk()
@@ -70,42 +74,41 @@ class App():
         # Init dynamic row
         self.row = 0
 
-    def updateProgressBar(self, text):
+    def updateProgressBar(self, value, message):
         """ Updates the progress bar text and position when processing
         """
-        self.label_progress.config(text=text)
+        self.label_progress.config(text=message)
         self.root.update_idletasks()
-        # TODO make the value increment by the percentage of the inputObj options selected
-        self.progress['value'] += 7
+        self.bar_progress['value'] = value
 
     def browsefunc(self):
-        """ Opens a file explorer window and sets the output_directory as the selection
+        """ Opens a file explorer window and sets the ouputDirectory as the selection
         """
-        self.output_directory = filedialog.askdirectory()
-        self.input_studyRegion = self.dropdownMenu.get()
-        self.text_outputDir.delete("1.0", 'end-1c')
-        if len(self.input_studyRegion) > 0:
-            self.text_outputDir.insert(
-                "1.0", self.output_directory + '/' + self.input_studyRegion)
+        self.outputDirectory = filedialog.askdirectory()
+        self.outputDirectory = self.outputDirectory.replace('\n', '')
+        self.text_outputDirectory.delete("1.0", 'end-1c')
+        if len(self.dropdown_studyRegion.get()) > 0:
+            self.text_outputDirectory.insert(
+                "1.0", self.outputDirectory + '/' + self.dropdown_studyRegion.get())
             self.root.update_idletasks()
         else:
-            self.text_outputDir.insert("1.0", self.output_directory)
+            self.text_outputDirectory.insert("1.0", self.outputDirectory)
             self.root.update_idletasks()
 
     def on_field_change(self, index, value, op):
         """ Updates the output directory and input study region on dropdown selection
         """
         try:
-            self.input_studyRegion = self.dropdownMenu.get()
-            self.output_directory = str(
-                self.text_outputDir.get("1.0", 'end-1c'))
-            check = self.input_studyRegion in self.output_directory
-            if (len(self.output_directory) > 0) and (not check):
-                self.output_directory = '/'.join(
-                    self.output_directory.split('/')[0:-1])
-                self.text_outputDir.delete('1.0', 'end')
-                self.text_outputDir.insert(
-                    "1.0", self.output_directory + '/' + self.input_studyRegion)
+            self.outputDirectory = str(
+                self.text_outputDirectory.get("1.0", 'end-1c'))
+            self.outputDirectory = self.outputDirectory.replace('\n', '')
+            check = self.input_studyRegion in self.outputDirectory
+            if (len(self.outputDirectory) > 0) and (not check):
+                self.outputDirectory = '/'.join(
+                    self.outputDirectory.split('/')[0:-1])
+                self.text_outputDirectory.delete('1.0', 'end')
+                self.text_outputDirectory.insert(
+                    "1.0", self.outputDirectory + '/' + self.input_studyRegion)
             self.root.update_idletasks()
         except:
             pass
@@ -116,7 +119,7 @@ class App():
         dict = {
             'title': self.text_title.get("1.0", 'end-1c'),
             'subtitle': self.text_subtitle.get("1.0", 'end-1c'),
-            'output_directory': '/'.join(self.text_outputDir.get("1.0", 'end-1c').split('/')[0:-1])
+            'ouputDirectory': '/'.join(self.text_outputDirectory.get("1.0", 'end-1c').split('/')[0:-1])
         }
         return dict
 
@@ -136,221 +139,205 @@ class App():
     def on_leave_run(self, e):
         self.button_run['background'] = '#0078a9'
 
-    # def run(self):
-    #     try:
-    #         # check if a study region and output directory have been selected
-    #         if (len(self.dropdownMenu.get()) > 0) and (len(self.text_outputDir.get("1.0", 'end-1c')) > 0):
-    #             # check if any export options are checked
-    #             if (self.opt_csv.get() + self.opt_shp.get() + self.opt_report.get() + self.opt_geojson.get()) > 0:
-    #                 # expand the root geometry to account for the progress bar
-    #                 self.root.geometry(str(self.root_w) +
-    #                                    'x' + str(self.root_h + 50))
-    #                 self.root.update()
-    #                 sleep(1)
-    #                 # self.busy()
-    #                 func_row = self.row # initialize dynamic row incrementation
-
-    #                 # build an input object containing all user defined options
-    #                 self.inputObj = self.getTextFields()
-    #                 self.inputObj.update(
-    #                     {'study_region': self.dropdownMenu.get()})
-    #                 self.inputObj.update({'opt_csv': self.opt_csv.get()})
-    #                 self.inputObj.update({'opt_shp': self.opt_shp.get()})
-    #                 self.inputObj.update({'opt_report': self.opt_report.get()})
-    #                 self.inputObj.update(
-    #                     {'opt_geojson': self.opt_geojson.get()})
-
-    #                 # initialize the progress bar
-    #                 self.progress = Progressbar(mode='indeterminate')
-    #                 self.progress.grid(row=func_row, column=1, pady=(
-    #                     0, 10), padx=50, sticky='nsew')
-    #                 func_row += 1
-    #                 self.label_progress = tk.Label(
-    #                     self.root, text='Initializing', font='Helvetica 8', background=self.backgroundColor, fg=self.foregroundColor)
-    #                 self.label_progress.grid(
-    #                     row=func_row, column=1, sticky='nsew')
-    #                 self.label_progress.config(
-    #                     text='Establishing connection to SQL Server')
-    #                 self.progress['value'] = 0
-    #                 self.root.update_idletasks()
-
-    #                 # export the information
-    #                 try:
-    #                     t0 = time()
-    #                     self.updateProgressBar('Creating the output directory')
-    #                     self.inputObj['output_directory'] = self.inputObj['output_directory'] + \
-    #                         '/' + self.inputObj['study_region']
-                        
-    #                     # create a directory for the output files
-    #                     if not os.path.exists(self.inputObj['output_directory']):
-    #                         os.mkdir(self.inputObj['output_directory'])
-
-    #                     self.updateProgressBar('Initializing Study Region API')
-    #                     studyRegion = StudyRegion(
-    #                         self.inputObj['study_region'])
-    #                     self.updateProgressBar('Study Region API initialized')
-
-    #                     self.updateProgressBar('Retrieving results')
-    #                     results = studyRegion.getResults()
-    #                     self.updateProgressBar('Retrieving damaged facilities')
-    #                     essentialFacilities = studyRegion.getEssentialFacilities()
-
-    #                     # create an error list - set debug = True/False in the config.json to print the errors
-    #                     errors = []
-
-    #                     # check if the study region contains result data
-    #                     if len(results) < 1:
-    #                         tk.messagebox.showwarning(
-    #                             'HazPy', 'No results found. Please check your study region and try again.')
-    #                     else:
-    #                         # export CSV files
-    #                         if self.inputObj['opt_csv']:
-    #                             try:
-    #                                 self.updateProgressBar('Writing results to CSV')
-    #                                 results.toCSV(
-    #                                     self.inputObj['output_directory'] + '/results.csv')
-    #                             except:
-    #                                 errors.append('Unable to write results to CSV - ' + str(sys.exc_info()[0]))
-    #                                 pass
-                                
-    #                             try:
-    #                                 self.updateProgressBar(
-    #                                     'Retrieving building damage by occupancy')
-    #                                 buildingDamageByOccupancy = studyRegion.getBuildingDamageByOccupancy()
-    #                                 self.updateProgressBar(
-    #                                     'Writing building damage to CSV')
-    #                                 buildingDamageByOccupancy.toCSV(
-    #                                     self.inputObj['output_directory'] + '/building_damage_by_occupancy.csv')
-    #                             except:
-    #                                 errors.append('Unable to write building damage by occupancy to CSV - ' + str(sys.exc_info()[0]))
-    #                                 pass
-
-    #                             try:
-    #                                 self.updateProgressBar(
-    #                                     'Retrieving building damage by type')
-    #                                 buildingDamageByType = studyRegion.getBuildingDamageByType()
-    #                                 self.updateProgressBar(
-    #                                     'Writing building damage to CSV')
-    #                                 buildingDamageByType.toCSV(
-    #                                     self.inputObj['output_directory'] + '/building_damage_by_type.csv')
-    #                             except:
-    #                                 errors.append('Unable to write building damage by type to CSV - ' + str(sys.exc_info()[0]))
-    #                                 pass
-
-    #                             try:
-    #                                 self.updateProgressBar(
-    #                                     'Writing damaged facilities to CSV')
-    #                                 essentialFacilities.toCSV(
-    #                                     self.inputObj['output_directory'] + '/damaged_facilities.csv')
-    #                             except:
-    #                                 errors.append('Unable to write damaged facilities to CSV - ' + str(sys.exc_info()[0]))
-    #                                 pass
-
-    #                         # export Shapefiles
-    #                         if self.inputObj['opt_shp']:
-    #                             try:
-    #                                 self.updateProgressBar(
-    #                                     'Writing results to Shapefile')
-    #                                 results.toShapefile(
-    #                                     self.inputObj['output_directory'] + '/results.shp')
-    #                             except:
-    #                                 errors.append('Unable to write results to Shapefile - ' + str(sys.exc_info()[0]))
-    #                                 pass
-
-    #                             try:
-    #                                 self.updateProgressBar(
-    #                                     'Writing damaged facilities to Shapefile')
-    #                                 essentialFacilities.toShapefile(
-    #                                     self.inputObj['output_directory'] + '/damaged_facilities.shp')
-    #                             except:
-    #                                 errors.append('Unable to write damaged facilities to Shapefile - ' + str(sys.exc_info()[0]))
-    #                                 pass
-
-    #                         # export GeoJSON files
-    #                         if self.inputObj['opt_geojson']:
-    #                             try:
-    #                                 self.updateProgressBar(
-    #                                     'Writing results to GeoJSON')
-    #                                 results.toGeoJSON(self.inputObj['output_directory'] + '/results.geojson')
-    #                             except:
-    #                                 errors.append('Unable to write results to GeoJSON - ' + str(sys.exc_info()[0]))
-    #                                 pass
-
-    #                             try:
-    #                                 self.updateProgressBar(
-    #                                     'Writing damaged facilities to GeoJSON')
-    #                                 essentialFacilities.toGeoJSON(
-    #                                     self.inputObj['output_directory'] + '/damaged_facilities.geojson')
-    #                             except:
-    #                                 errors.append('Unable to write damaged facilities to GeoJSON - ' + str(sys.exc_info()[0]))
-    #                                 pass
-
-    #                         # export PDF report
-    #                         if self.inputObj['opt_report']:
-    #                             try:
-    #                                 self.updateProgressBar(
-    #                                     'Building the report')
-    #                                 if len(self.inputObj['title']) > 0:
-    #                                     studyRegion.report.title = self.inputObj['title']
-    #                                 if len(self.inputObj['subtitle']) > 0:
-    #                                     studyRegion.report.subtitle = self.inputObj['subtitle']
-    #                                 studyRegion.report.save(
-    #                                     self.inputObj['output_directory'] + '/report.pdf', premade=studyRegion.hazards[0])
-    #                             except:
-    #                                 errors.append('Unable to build the report')
-    #                                 pass
-
-    #                         print('HazPy results available at: ' + self.inputObj['output_directory'] +
-    #                             '\\' + self.inputObj['study_region'])
-    #                         self.progress['value'] = 100
-    #                         print('Total elapsed time: ' + str(time() - t0))
-    #                         tk.messagebox.showinfo("HazPy", "Success! Output files can be found at: " +
-    #                                             self.inputObj['output_directory'] + '/' + self.inputObj['study_region'])
-
-    #                         if self.debug:
-    #                             print('Errors: ' + ' | '.join(errors))
-    #                         # self.notbusy()
-                        
-    #                     # reset root geometry and destory the progress bar
-    #                     self.root.geometry(
-    #                         str(self.root_w) + 'x' + str(self.root_h))
-    #                     self.root.update()
-    #                     self.progress.destroy()
-    #                     self.label_progress.destroy()
-
-    #                 # if an unexpected error occurs during the export
-    #                 except:
-    #                     # reset root geometry and destory the progress bar
-    #                     self.root.geometry(
-    #                         str(self.root_w) + 'x' + str(self.root_h))
-    #                     self.root.update()
-    #                     self.progress.destroy()
-    #                     self.label_progress.destroy()
-
-    #                     # self.notbusy()
-    #                     tk.messagebox.showerror(
-    #                         'HazPy', str(sys.exc_info()[0]))
-
-    #             # if zero export options are selected
-    #             else:
-    #                 tk.messagebox.showwarning(
-    #                     'HazPy', 'Select at least one option to export')
-
-    #         # if both the study region and output directory haven't been selected
-    #         else:
-    #             tk.messagebox.showwarning(
-    #                 'HazPy', 'Make sure a study region and output directory have been selected')
-
-    #     # if the app cannot open
-    #     except:
-    #         self.root.geometry(
-    #             str(self.root_w) + 'x' + str(self.root_h))
-    #         self.root.update()
-    #         ctypes.windll.user32.MessageBoxW(
-    #             None, u"Unable to open correctly: " + str(sys.exc_info()[0]), u'HazPy - Message', 0)
-
     def run(self):
-        print('rin furrest rin')
+        try:
+            # init time
+            t0 = time()
+
+            # make sure all options are selected and get all info
+            if not self.validateRequiredFields():
+                ctypes.windll.user32.MessageBoxW(
+                    None, u"Please select these required fields prior to exporting: {e}".format(e=self.selection_errors), u'HazPy - Message', 0)
+                return None
+
+            # add progress bar
+            self.addWidget_progress()
+
+            # calculate  progress bar increments
+            exportOptionsCount = sum([x for x in self.exportOptions.values()])
+            if self.exportOptions['report']:
+                exportOptionsCount += 2
+            exportOptionsCount + 3
+            progressIncrement = 100 / exportOptionsCount
+            progressValue = 0
+            
+            # create a directory for the output files
+            if not os.path.exists(self.outputDirectory):
+                os.mkdir(self.outputDirectory)
+
+            # get bulk of results
+            try:
+                progressValue = progressValue + progressIncrement
+                msg = 'Retrieving base results'
+                self.updateProgressBar(progressValue, msg)
+                results = self.studyRegion.getResults()
+                essentialFacilities = self.studyRegion.getEssentialFacilities()
+
+                # check if the study region contains result data
+                if len(results) < 1:
+                    tk.messagebox.showwarning(
+                        'HazPy', 'No results found. Please check your study region and try again.')
+            except:
+                ctypes.windll.user32.MessageBoxW(None, u"Unexpected error retrieving base results: " + str(sys.exc_info()[0]), u'HazPy - Message', 0)
+
+
+            if self.exportOptions['csv']:
+                try:
+                    progressValue = progressValue + progressIncrement
+                    msg = 'Writing results to CSV'
+                    self.updateProgressBar(progressValue, msg)
+                    try:
+                        results.toCSV(self.outputDirectory + '/results.csv')
+                    except:
+                        print('Base results not available to export.')
+                    try:
+                        buildingDamageByOccupancy = self.studyRegion.getBuildingDamageByOccupancy()
+                        buildingDamageByOccupancy.toCSV(self.outputDirectory + '/building_damage_by_occupancy.csv')
+                    except:
+                        print('Building damage by occupancy not available to export.')
+                    try:
+                        buildingDamageByType = studyRegion.getBuildingDamageByType()
+                        buildingDamageByType.toCSV(self.outputDirectory + '/building_damage_by_type.csv')
+                    except:
+                        print('Building damage by type not available to export.')
+                    try:
+                        essentialFacilities.toCSV(self.outputDirectory + '/damaged_facilities.csv')
+                    except:
+                        print('Damaged facilities not available to export.')
+                except:
+                    ctypes.windll.user32.MessageBoxW(
+                        None, u"Unexpected error exporting CSVs: " + str(sys.exc_info()[0]), u'HazPy - Message', 0)
+
+            if self.exportOptions['shapefile']:
+                try:
+                    progressValue = progressValue + progressIncrement
+                    msg = 'Writing results to Shapefile'
+                    self.updateProgressBar(progressValue, msg)
+                    try:
+                        results.toShapefile(
+                            self.outputDirectory + '/results.shp')
+                    except:
+                        print('Base results not available to export.')
+                    try:
+                        essentialFacilities.toShapefile(
+                            self.outputDirectory + '/damaged_facilities.shp')
+                    except:
+                        print('Damaged facilities not available to export.')
+                except:
+                    ctypes.windll.user32.MessageBoxW(
+                        None, u"Unexpected error exporting Shapefile: " + str(sys.exc_info()[0]), u'HazPy - Message', 0)
+
+            if self.exportOptions['geojson']:
+                try:
+                    progressValue = progressValue + progressIncrement
+                    msg = 'Writing results to GeoJSON'
+                    self.updateProgressBar(progressValue, msg)
+                    try:
+                        results.toGeoJSON(
+                            self.outputDirectory + '/results.geojson')
+                    except:
+                        print('Base results not available to export.')
+                    try:
+                        essentialFacilities.toGeoJSON(
+                            self.outputDirectory + '/damaged_facilities.geojson')
+                    except:
+                        print('Damaged facilities not available to export.')
+                except:
+                    ctypes.windll.user32.MessageBoxW(
+                        None, u"Unexpected error exporting GeoJSON: " + str(sys.exc_info()[0]), u'HazPy - Message', 0)
+
+            if self.exportOptions['report']:
+                try:
+                    progressValue = progressValue + progressIncrement
+                    msg = 'Writing results to PDF (exchanging patience for maps)'
+                    self.updateProgressBar(progressValue, msg)
+                    reportTitle = self.text_reportTitle.get("1.0", 'end-1c')
+                    if len(reportTitle) > 0:
+                        self.studyRegion.report.title = reportTitle
+                    reportSubtitle = self.text_reportSubtitle.get("1.0", 'end-1c')
+                    if len(reportSubtitle) > 0:
+                        self.studyRegion.report.subtitle = reportSubtitle
+                    self.studyRegion.report.buildPremade()
+                    self.studyRegion.report.save(self.outputDirectory + '/report_summary.pdf')
+                except:
+                    ctypes.windll.user32.MessageBoxW(
+                        None, u"Unexpected error exporting the PDF: " + str(sys.exc_info()[0]), u'HazPy - Message', 0)
+
+                self.updateProgressBar(100, 'Complete')
+                print('Results available at: ' + self.outputDirectory)
+                print('Total elapsed time: ' + str(time() - t0))
+                tk.messagebox.showinfo("HazPy", "Success! Output files can be found at: " +
+                                    self.outputDirectory)
+                self.removeWidget_progress()
+
+        except:
+            if 'bar_progress' in dir(self):
+                self.removeWidget_progress()
+            ctypes.windll.user32.MessageBoxW(
+                None, u"Unexpected export error: " + str(sys.exc_info()[0]), u'HazPy - Message', 0)
+    
+    def validateRequiredFields(self):
+        try:
+            self.selection_errors = []
+            validated = True
+            # validate dropdown menus
+            if self.dropdown_studyRegion.winfo_ismapped():
+                value = self.dropdown_studyRegion.get()
+                if len(value) > 0:
+                    self.studyRegion = StudyRegion(str(value))
+                else:
+                    self.selection_errors.append('Study Region')
+                    validated = False
+            if 'dropdown_scenario' in dir(self) and self.dropdown_scenario.winfo_ismapped():
+                value = self.dropdown_scenario.get()
+                if len(value) > 0:
+                    self.studyRegion.setScenario(value)
+                else:
+                    self.selection_errors.append('Scenario')
+                    validated = False
+            if 'dropdown_hazard' in dir(self) and self.dropdown_hazard.winfo_ismapped():
+                value = self.dropdown_hazard.get()
+                if len(value) > 0:
+                    self.studyRegion.setHazard(value)
+                else:
+                    self.selection_errors.append('Hazard')
+                    validated = False
+            if 'dropdown_returnPeriod' in dir(self) and self.dropdown_returnPeriod.winfo_ismapped():
+                value = self.dropdown_returnPeriod.get()
+                if len(value) > 0:
+                    self.studyRegion.setReturnPeriod(value)
+                else:
+                    self.selection_errors.append('Return Period')
+                    validated = False
+            print('dropdown menus validated')
+
+            # validate export checkboxes
+            self.exportOptions = {}
+            self.exportOptions['csv'] = self.opt_csv.get()
+            self.exportOptions['shapefile'] = self.opt_shp.get()
+            self.exportOptions['geojson'] = self.opt_geojson.get()
+            self.exportOptions['report'] = self.opt_report.get()
+
+            exportOptionsCount = sum([x for x in self.exportOptions.values()])
+            if exportOptionsCount == 0:
+                self.selection_errors.append('export checkbox')
+                validated = False
+            print('export options validated')
+
+            # validate output directory
+            self.outputDirectory = self.text_outputDirectory.get("1.0",'end')
+            self.outputDirectory = self.outputDirectory.replace('\n', '')
+            if len(self.outputDirectory) == 0:
+                self.selection_errors.append('output directory')
+                validated = False
+            print('output directory validated')
+            
+            return validated
+        except:
+            validated = False
+            ctypes.windll.user32.MessageBoxW(
+                None, u"Unexpected export error: " + str(sys.exc_info()[0]), u'HazPy - Message', 0)
+
 
     def addWidget_report(self, row):
         # report title
@@ -358,11 +345,11 @@ class App():
             self.root, text='Report Title', font='Helvetica 10 bold', background=self.backgroundColor, fg=self.fontColor)
         self.label_reportTitle.grid(row=row, column=1, padx=0, pady=(20, 5), sticky=W)
         row += 1
-        # report title text input (conditional)
+        # report title text input
         self.text_reportTitle = tk.Text(self.root, height=1, width=37, font='Helvetica 10', background=self.textEntryColor, relief='flat',
                                 highlightbackground=self.textBorderColor, highlightthickness=1, highlightcolor=self.textHighlightColor)
         self.text_reportTitle.grid(row=row, column=1, padx=(0, 0), pady=(0, 0), sticky=W)
-        # report title icon (conditional)
+        # report title icon
         self.img_reportTitle = tk.Label(
             self.root, image=self.img_edit, background=self.backgroundColor)
         self.img_reportTitle.grid(row=row, column=2, padx=(0, self.padl), pady=(0, 0), sticky=W)
@@ -471,57 +458,96 @@ class App():
         self.dropdown_returnPeriod.grid_forget()
         self.dropdown_returnPeriod.set('')
 
+    def addWidget_progress(self):
+        row = self.row_progress
+
+        self.bar_progress = Progressbar(mode='indeterminate')
+        self.bar_progress.grid(row=row, column=1, pady=(0, 10), padx=50, sticky='nsew')
+        self.root.update_idletasks()
+        row += 1
+        self.label_progress = tk.Label(
+            self.root, text='Initializing', font='Helvetica 8', background=self.backgroundColor, fg=self.foregroundColor)
+        self.label_progress.grid(
+            row=row, pady=(0, 10), column=1, sticky='nsew')
+        row += 1
+        self.label_progress.config(
+            text='Initializing')
+        self.bar_progress['value'] = 0
+        self.root.update_idletasks()
+        self.root.update()
+
+    def removeWidget_progress(self):
+        self.bar_progress.grid_forget()
+        self.label_progress.grid_forget()
 
     def handle_studyRegion(self, name, index, operation):
-        value = self.value_studyRegion.get()
-        self.studyRegion = StudyRegion(value)
-        self.options_hazard = self.studyRegion.getHazardsAnalyzed()
-        self.options_scenario = self.studyRegion.getScenarios()
-        self.options_returnPeriod = self.studyRegion.getReturnPeriods()
         try:
-            self.removeWidget_hazard()
+            value = self.value_studyRegion.get()
+            if value != '':
+                self.studyRegion = StudyRegion(str(value))
+                print('Study Region set as ' + str(value))
+                self.options_hazard = self.studyRegion.getHazardsAnalyzed()
+                self.options_scenario = self.studyRegion.getScenarios()
+                self.options_returnPeriod = self.studyRegion.getReturnPeriods()
+                try:
+                    self.removeWidget_hazard()
+                except:
+                    pass
+                try:
+                    self.removeWidget_scenario()
+                except:
+                    pass
+                try:
+                    self.removeWidget_returnPeriod()
+                except:
+                    pass
+                if len(self.options_hazard) > 1:
+                    self.addWidget_hazard(self.row_hazard)
+                if len(self.options_scenario) > 1:
+                    self.addWidget_scenario(self.row_scenario)
+                if len(self.options_returnPeriod) > 1:
+                    self.addWidget_returnPeriod(self.row_returnPeriod)
+
+                # update the output directory
+                if len(self.text_outputDirectory.get("1.0", 'end-1c')) > 0:
+                    self.text_outputDirectory.delete("1.0", 'end-1c')
+                    self.text_outputDirectory.insert(
+                        "1.0", self.outputDirectory + '/' + self.studyRegion.name)
         except:
-            pass
-        try:
-            self.removeWidget_scenario()
-        except:
-            pass
-        try:
-            self.removeWidget_returnPeriod()
-        except:
-            pass
-        if len(self.options_hazard) > 1:
-            self.addWidget_hazard(self.row_hazard)
-        if len(self.options_scenario) > 1:
-            self.addWidget_scenario(self.row_scenario)
-        if len(self.options_returnPeriod) > 1:
-            self.addWidget_returnPeriod(self.row_returnPeriod)
+            ctypes.windll.user32.MessageBoxW(
+                None, u"Unable to initialize the Study Region. Please select another Study Region to continue. Error: " + str(sys.exc_info()[0]), u'HazPy - Message', 0)
 
     def handle_hazard(self, name, index, operation):
         value = self.value_hazard.get()
-        self.studyRegion.setHazard(value)
-        self.options_scenario = self.studyRegion.getScenarios()
-        try:
-            self.removeWidget_scenario()
-        except:
-            pass
-        if len(self.options_scenario) > 1:
-            self.addWidget_scenario()
+        if value != '':
+            self.studyRegion.setHazard(value)
+            print('Hazard set as ' + str(value))
+            self.options_scenario = self.studyRegion.getScenarios()
+            try:
+                self.removeWidget_scenario()
+            except:
+                pass
+            if len(self.options_scenario) > 1:
+                self.addWidget_scenario()
     
     def handle_scenario(self, name, index, operation):
         value = self.value_scenario.get()
-        self.studyRegion.setScenario(value)
-        self.options_returnPeriod = self.studyRegion.getReturnPeriods()
-        try:
-            self.removeWidget_returnPeriod()
-        except:
-            pass
-        if len(self.options_returnPeriod) > 1:
-            self.addWidget_returnPeriod()
+        if value != '':
+            self.studyRegion.setScenario(value)
+            print('Scenario set as ' + str(value))
+            self.options_returnPeriod = self.studyRegion.getReturnPeriods()
+            try:
+                self.removeWidget_returnPeriod()
+            except:
+                pass
+            if len(self.options_returnPeriod) > 1:
+                self.addWidget_returnPeriod()
 
     def handle_returnPeriod(self, name, index, operation):
         value = self.value_returnPeriod.get()
-        self.studyRegion.setReturnPeriod(value)
+        if value != '':
+            self.studyRegion.setReturnPeriod(value)
+            print('Return Period set as ' + str(value))
         
 
     def build_gui(self):
@@ -647,6 +673,10 @@ class App():
                                         background='#0078a9', fg='#fff', cursor="hand2", font='Helvetica 8 bold', relief='flat')
             self.button_run.grid(row=self.row, column=1, columnspan=1,
                                 sticky='nsew', padx=50, pady=(30, 20))
+            self.row += 2
+
+            # progress bar
+            self.row_progress = self.row
             self.row += 1
 
         except:
