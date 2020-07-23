@@ -20,10 +20,6 @@ import json
 
 
 class App():
-    # TODO update tab through menu
-    # TODO update output directory auto change
-    # TODO add more progress steps
-    # TODO building count in buildingDamageByType looks high! check fail2
     def __init__(self):
         # Create app
         self.root = tk.Tk()
@@ -95,36 +91,12 @@ class App():
             self.text_outputDirectory.insert("1.0", self.outputDirectory)
             self.root.update_idletasks()
 
-    def on_field_change(self, index, value, op):
-        """ Updates the output directory and input study region on dropdown selection
-        """
-        try:
-            self.outputDirectory = str(
-                self.text_outputDirectory.get("1.0", 'end-1c'))
-            self.outputDirectory = self.outputDirectory.replace('\n', '')
-            check = self.input_studyRegion in self.outputDirectory
-            if (len(self.outputDirectory) > 0) and (not check):
-                self.outputDirectory = '/'.join(
-                    self.outputDirectory.split('/')[0:-1])
-                self.text_outputDirectory.delete('1.0', 'end')
-                self.text_outputDirectory.insert(
-                    "1.0", self.outputDirectory + '/' + self.input_studyRegion)
-            self.root.update_idletasks()
-        except:
-            pass
-
-    def getTextFields(self):
-        """ Retrieves the text from all app text fields
-        """
-        dict = {
-            'title': self.text_title.get("1.0", 'end-1c'),
-            'subtitle': self.text_subtitle.get("1.0", 'end-1c'),
-            'ouputDirectory': '/'.join(self.text_outputDirectory.get("1.0", 'end-1c').split('/')[0:-1])
-        }
-        return dict
-
     def focus_next_widget(self, event):
         event.widget.tk_focusNext().focus()
+        return("break")
+
+    def focus_previous_widget(self, event):
+        event.widget.tk_focusPrev().focus()
         return("break")
 
     def on_enter_dir(self, e):
@@ -153,17 +125,24 @@ class App():
             # add progress bar
             self.addWidget_progress()
 
-            # calculate  progress bar increments
-            exportOptionsCount = sum([x for x in self.exportOptions.values()])
-            if self.exportOptions['report']:
+            # calculate progress bar increments
+            exportOptionsCount = 0
+            if self.exportOptions['csv']:
+                exportOptionsCount += 4
+            if self.exportOptions['shapefile']:
                 exportOptionsCount += 2
-            exportOptionsCount + 3
+            if self.exportOptions['geojson']:
+                exportOptionsCount += 2
+            if self.exportOptions['report']:
+                exportOptionsCount += 3
             progressIncrement = 100 / exportOptionsCount
             progressValue = 0
             
             # create a directory for the output files
-            if not os.path.exists(self.outputDirectory):
-                os.mkdir(self.outputDirectory)
+            outputPath = self.text_outputDirectory.get("1.0",'end')
+            outputPath = outputPath.replace('\n', '')
+            if not os.path.exists(outputPath):
+                os.mkdir(outputPath)
 
             # get bulk of results
             try:
@@ -184,24 +163,29 @@ class App():
             if self.exportOptions['csv']:
                 try:
                     progressValue = progressValue + progressIncrement
-                    msg = 'Writing results to CSV'
-                    self.updateProgressBar(progressValue, msg)
+                    self.updateProgressBar(progressValue, 'Writing results to CSV')
                     try:
-                        results.toCSV(self.outputDirectory + '/results.csv')
+                        results.toCSV(outputPath + '/results.csv')
                     except:
                         print('Base results not available to export.')
                     try:
+                        progressValue = progressValue + progressIncrement
+                        self.updateProgressBar(progressValue, 'Writing building damage by occupancy to CSV')
                         buildingDamageByOccupancy = self.studyRegion.getBuildingDamageByOccupancy()
-                        buildingDamageByOccupancy.toCSV(self.outputDirectory + '/building_damage_by_occupancy.csv')
+                        buildingDamageByOccupancy.toCSV(outputPath + '/building_damage_by_occupancy.csv')
                     except:
                         print('Building damage by occupancy not available to export.')
                     try:
-                        buildingDamageByType = studyRegion.getBuildingDamageByType()
-                        buildingDamageByType.toCSV(self.outputDirectory + '/building_damage_by_type.csv')
+                        progressValue = progressValue + progressIncrement
+                        self.updateProgressBar(progressValue, 'Writing building damage by type to CSV')
+                        buildingDamageByType = self.studyRegion.getBuildingDamageByType()
+                        buildingDamageByType.toCSV(outputPath + '/building_damage_by_type.csv')
                     except:
                         print('Building damage by type not available to export.')
                     try:
-                        essentialFacilities.toCSV(self.outputDirectory + '/damaged_facilities.csv')
+                        progressValue = progressValue + progressIncrement
+                        self.updateProgressBar(progressValue, 'Writing damaged facilities to CSV')
+                        essentialFacilities.toCSV(outputPath + '/damaged_facilities.csv')
                     except:
                         print('Damaged facilities not available to export.')
                 except:
@@ -211,16 +195,17 @@ class App():
             if self.exportOptions['shapefile']:
                 try:
                     progressValue = progressValue + progressIncrement
-                    msg = 'Writing results to Shapefile'
-                    self.updateProgressBar(progressValue, msg)
+                    self.updateProgressBar(progressValue, 'Writing results to Shapefile')
                     try:
                         results.toShapefile(
-                            self.outputDirectory + '/results.shp')
+                            outputPath + '/results.shp')
                     except:
                         print('Base results not available to export.')
                     try:
+                        progressValue = progressValue + progressIncrement
+                        self.updateProgressBar(progressValue, 'Writing damaged facilities to Shapefile')
                         essentialFacilities.toShapefile(
-                            self.outputDirectory + '/damaged_facilities.shp')
+                            outputPath + '/damaged_facilities.shp')
                     except:
                         print('Damaged facilities not available to export.')
                 except:
@@ -234,12 +219,14 @@ class App():
                     self.updateProgressBar(progressValue, msg)
                     try:
                         results.toGeoJSON(
-                            self.outputDirectory + '/results.geojson')
+                            outputPath + '/results.geojson')
                     except:
                         print('Base results not available to export.')
                     try:
+                        progressValue = progressValue + progressIncrement
+                        self.updateProgressBar(progressValue, 'Writing damaged facilities to GeoJSON')
                         essentialFacilities.toGeoJSON(
-                            self.outputDirectory + '/damaged_facilities.geojson')
+                            outputPath + '/damaged_facilities.geojson')
                     except:
                         print('Damaged facilities not available to export.')
                 except:
@@ -258,17 +245,17 @@ class App():
                     if len(reportSubtitle) > 0:
                         self.studyRegion.report.subtitle = reportSubtitle
                     self.studyRegion.report.buildPremade()
-                    self.studyRegion.report.save(self.outputDirectory + '/report_summary.pdf')
+                    self.studyRegion.report.save(outputPath + '/report_summary.pdf')
                 except:
                     ctypes.windll.user32.MessageBoxW(
                         None, u"Unexpected error exporting the PDF: " + str(sys.exc_info()[0]), u'HazPy - Message', 0)
 
-                self.updateProgressBar(100, 'Complete')
-                print('Results available at: ' + self.outputDirectory)
-                print('Total elapsed time: ' + str(time() - t0))
-                tk.messagebox.showinfo("HazPy", "Success! Output files can be found at: " +
-                                    self.outputDirectory)
-                self.removeWidget_progress()
+            self.updateProgressBar(100, 'Complete')
+            print('Results available at: ' + outputPath)
+            print('Total elapsed time: ' + str(time() - t0))
+            tk.messagebox.showinfo("HazPy", "Complete - Output files can be found at: " +
+                                outputPath)
+            self.removeWidget_progress()
 
         except:
             if 'bar_progress' in dir(self):
@@ -309,7 +296,6 @@ class App():
                 else:
                     self.selection_errors.append('Return Period')
                     validated = False
-            print('dropdown menus validated')
 
             # validate export checkboxes
             self.exportOptions = {}
@@ -322,15 +308,13 @@ class App():
             if exportOptionsCount == 0:
                 self.selection_errors.append('export checkbox')
                 validated = False
-            print('export options validated')
 
             # validate output directory
-            self.outputDirectory = self.text_outputDirectory.get("1.0",'end')
-            self.outputDirectory = self.outputDirectory.replace('\n', '')
-            if len(self.outputDirectory) == 0:
+            _outputDirectory = self.text_outputDirectory.get("1.0",'end')
+            _outputDirectory = _outputDirectory.replace('\n', '')
+            if len(_outputDirectory) == 0:
                 self.selection_errors.append('output directory')
                 validated = False
-            print('output directory validated')
             
             return validated
         except:
@@ -485,7 +469,6 @@ class App():
             value = self.value_studyRegion.get()
             if value != '':
                 self.studyRegion = StudyRegion(str(value))
-                print('Study Region set as ' + str(value))
                 self.options_hazard = self.studyRegion.getHazardsAnalyzed()
                 self.options_scenario = self.studyRegion.getScenarios()
                 self.options_returnPeriod = self.studyRegion.getReturnPeriods()
@@ -679,16 +662,22 @@ class App():
             self.row_progress = self.row
             self.row += 1
 
+            # bind widget actions
+            self.text_reportTitle.bind('<Tab>', self.focus_next_widget)
+            self.text_reportSubtitle.bind('<Tab>', self.focus_next_widget)
+            self.text_outputDirectory.bind('<Tab>', self.focus_next_widget)
+            self.text_reportTitle.bind('<Shift-Tab>', self.focus_previous_widget)
+            self.text_reportSubtitle.bind('<Shift-Tab>', self.focus_previous_widget)
+            self.text_outputDirectory.bind('<Shift-Tab>', self.focus_previous_widget)
+
         except:
             messageBox = ctypes.windll.user32.MessageBoxW
             messageBox(0, "Unable to build the app: " + str(sys.exc_info()[0]) + " | If this problem persists, contact hazus-support@riskmapcds.com.", "HazPy", 0x1000)
-
 
     # Run app
     def start(self):
         self.build_gui()
         self.root.mainloop()
-
 
 # Start the app
 app = App()
