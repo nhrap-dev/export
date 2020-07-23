@@ -21,6 +21,7 @@ import json
 
 class App():
     def __init__(self):
+        """ tkinter application that uses HazPy to export Hazus results"""
         # Create app
         self.root = tk.Tk()
         # self.root.grid_propagate(0)
@@ -92,13 +93,18 @@ class App():
             self.root.update_idletasks()
 
     def focus_next_widget(self, event):
+        """ makes the interface focus on the next widget
+        """
         event.widget.tk_focusNext().focus()
         return("break")
 
     def focus_previous_widget(self, event):
+        """ makes the interface focus on the previous widget
+        """
         event.widget.tk_focusPrev().focus()
         return("break")
 
+    # TODO update hover actions
     def on_enter_dir(self, e):
         self.button_outputDir['background'] = self.hoverColor
 
@@ -112,6 +118,8 @@ class App():
         self.button_run['background'] = '#0078a9'
 
     def run(self):
+        """ runs the export with all the user parameters selected
+        """
         try:
             # init time
             t0 = time()
@@ -159,7 +167,7 @@ class App():
             except:
                 ctypes.windll.user32.MessageBoxW(None, u"Unexpected error retrieving base results: " + str(sys.exc_info()[0]), u'HazPy - Message', 0)
 
-
+            # export study region to csv if the checkbox is selected
             if self.exportOptions['csv']:
                 try:
                     progressValue = progressValue + progressIncrement
@@ -192,6 +200,7 @@ class App():
                     ctypes.windll.user32.MessageBoxW(
                         None, u"Unexpected error exporting CSVs: " + str(sys.exc_info()[0]), u'HazPy - Message', 0)
 
+            # export study region to Shapefile if the checkbox is selected
             if self.exportOptions['shapefile']:
                 try:
                     progressValue = progressValue + progressIncrement
@@ -212,6 +221,7 @@ class App():
                     ctypes.windll.user32.MessageBoxW(
                         None, u"Unexpected error exporting Shapefile: " + str(sys.exc_info()[0]), u'HazPy - Message', 0)
 
+            # export study region to GeoJSON if the checkbox is selected
             if self.exportOptions['geojson']:
                 try:
                     progressValue = progressValue + progressIncrement
@@ -233,6 +243,7 @@ class App():
                     ctypes.windll.user32.MessageBoxW(
                         None, u"Unexpected error exporting GeoJSON: " + str(sys.exc_info()[0]), u'HazPy - Message', 0)
 
+            # export study region to pdf if the checkbox is selected
             if self.exportOptions['report']:
                 try:
                     progressValue = progressValue + progressIncrement
@@ -250,6 +261,7 @@ class App():
                     ctypes.windll.user32.MessageBoxW(
                         None, u"Unexpected error exporting the PDF: " + str(sys.exc_info()[0]), u'HazPy - Message', 0)
 
+            # show export is complete
             self.updateProgressBar(100, 'Complete')
             print('Results available at: ' + outputPath)
             print('Total elapsed time: ' + str(time() - t0))
@@ -258,16 +270,23 @@ class App():
             self.removeWidget_progress()
 
         except:
+            # if the export fails
             if 'bar_progress' in dir(self):
                 self.removeWidget_progress()
             ctypes.windll.user32.MessageBoxW(
                 None, u"Unexpected export error: " + str(sys.exc_info()[0]), u'HazPy - Message', 0)
     
     def validateRequiredFields(self):
+        """ checks that the user has completed all required fields
+        """
         try:
+            # create a list to store error strings - this will prompt the user to complete every error found
             self.selection_errors = []
+            # defaults all fields validated to true
             validated = True
+
             # validate dropdown menus
+            # validates that a study region is selected
             if self.dropdown_studyRegion.winfo_ismapped():
                 value = self.dropdown_studyRegion.get()
                 if len(value) > 0:
@@ -275,6 +294,8 @@ class App():
                 else:
                     self.selection_errors.append('Study Region')
                     validated = False
+
+            # validates that a scenario is selected or auto-assigned
             if 'dropdown_scenario' in dir(self) and self.dropdown_scenario.winfo_ismapped():
                 value = self.dropdown_scenario.get()
                 if len(value) > 0:
@@ -282,6 +303,8 @@ class App():
                 else:
                     self.selection_errors.append('Scenario')
                     validated = False
+
+            # validates that a hazard is selected or auto-assigned
             if 'dropdown_hazard' in dir(self) and self.dropdown_hazard.winfo_ismapped():
                 value = self.dropdown_hazard.get()
                 if len(value) > 0:
@@ -289,6 +312,8 @@ class App():
                 else:
                     self.selection_errors.append('Hazard')
                     validated = False
+
+            # validates that a return period is selected or auto-assigned
             if 'dropdown_returnPeriod' in dir(self) and self.dropdown_returnPeriod.winfo_ismapped():
                 value = self.dropdown_returnPeriod.get()
                 if len(value) > 0:
@@ -304,6 +329,7 @@ class App():
             self.exportOptions['geojson'] = self.opt_geojson.get()
             self.exportOptions['report'] = self.opt_report.get()
 
+            # validates if the sum is greater than zero - if selected, they each checkbox will have a value of 1
             exportOptionsCount = sum([x for x in self.exportOptions.values()])
             if exportOptionsCount == 0:
                 self.selection_errors.append('export checkbox')
@@ -318,12 +344,15 @@ class App():
             
             return validated
         except:
+            # validation check fails
             validated = False
             ctypes.windll.user32.MessageBoxW(
                 None, u"Unexpected export error: " + str(sys.exc_info()[0]), u'HazPy - Message', 0)
 
 
     def addWidget_report(self, row):
+        """ adds the report title and report subtitle widgets
+        """
         # report title
         self.label_reportTitle = tk.Label(
             self.root, text='Report Title', font='Helvetica 10 bold', background=self.backgroundColor, fg=self.fontColor)
@@ -354,6 +383,8 @@ class App():
         self.img_reportSubtitle.grid(row=row, column=2, padx=(0, self.padl), pady=(0, 0), sticky=W)
     
     def removeWidget_report(self):
+        """ removes the report title and report subtitle widgets
+        """
         self.label_reportTitle.grid_forget()
         self.text_reportTitle.grid_forget()
         self.text_reportTitle.delete('1.0', 'end')
@@ -365,6 +396,7 @@ class App():
         self.img_reportSubtitle.grid_forget()
 
     def handle_reportCheckbox(self):
+        """adds and removes the report widgets based off checkbox selection"""
         val = self.opt_report.get()
         if val == 0:
             self.removeWidget_report()
@@ -372,6 +404,7 @@ class App():
             self.addWidget_report(self.row_report)  
 
     def addWidget_hazard(self, row):
+        """adds the hazard dropdown widget"""
         # requred label
         self.required_hazard = tk.Label(
             self.root, text='*', font='Helvetica 14 bold', background=self.backgroundColor, fg=self.starColor)
@@ -389,12 +422,14 @@ class App():
                             padx=(0, 0), pady=(0, 0), sticky=W)
     
     def removeWidget_hazard(self):
-            self.required_hazard.grid_forget()
-            self.label_hazard.grid_forget()
-            self.dropdown_hazard.grid_forget()
-            self.dropdown_hazard.set('')
+        """removes the hazard dropdown widget"""
+        self.required_hazard.grid_forget()
+        self.label_hazard.grid_forget()
+        self.dropdown_hazard.grid_forget()
+        self.dropdown_hazard.set('')
 
     def addWidget_scenario(self, row):
+        """adds the scenario dropdown widget"""
         # requred label
         self.required_scenario = tk.Label(
             self.root, text='*', font='Helvetica 14 bold', background=self.backgroundColor, fg=self.starColor)
@@ -413,12 +448,14 @@ class App():
                             padx=(0, 0), pady=(0, 0), sticky=W)
 
     def removeWidget_scenario(self):
+        """removes the scenario dropdown widget"""
         self.required_scenario.grid_forget()
         self.label_scenario.grid_forget()
         self.dropdown_scenario.grid_forget()
         self.dropdown_scenario.set('')
     
     def addWidget_returnPeriod(self, row):
+        """adds the return period dropdown widget"""
         # required label
         self.required_returnPeriod = tk.Label(
             self.root, text='*', font='Helvetica 14 bold', background=self.backgroundColor, fg=self.starColor)
@@ -437,12 +474,14 @@ class App():
                             padx=(0, 0), pady=(0, 0), sticky=W)
 
     def removeWidget_returnPeriod(self):
+        """removes the return period dropdown widget"""
         self.required_returnPeriod.grid_forget()
         self.label_returnPeriod.grid_forget()
         self.dropdown_returnPeriod.grid_forget()
         self.dropdown_returnPeriod.set('')
 
     def addWidget_progress(self):
+        """adds the progress bar widget"""
         row = self.row_progress
 
         self.bar_progress = Progressbar(mode='indeterminate')
@@ -461,17 +500,24 @@ class App():
         self.root.update()
 
     def removeWidget_progress(self):
+        """removes the progress bar widget"""
         self.bar_progress.grid_forget()
         self.label_progress.grid_forget()
 
     def handle_studyRegion(self, name, index, operation):
+        """handles widget creation and removal and initializes the study region class based off the study region dropdown selection"""
         try:
             value = self.value_studyRegion.get()
+            # if a study region is selected
             if value != '':
+                # init StudyRegion class
                 self.studyRegion = StudyRegion(str(value))
+                # get lists of hazards, scenarios, and return periods
                 self.options_hazard = self.studyRegion.getHazardsAnalyzed()
                 self.options_scenario = self.studyRegion.getScenarios()
                 self.options_returnPeriod = self.studyRegion.getReturnPeriods()
+
+                # try to remove previous widgets if they exist
                 try:
                     self.removeWidget_hazard()
                 except:
@@ -484,6 +530,8 @@ class App():
                     self.removeWidget_returnPeriod()
                 except:
                     pass
+
+                # add widgets if multiple options exist
                 if len(self.options_hazard) > 1:
                     self.addWidget_hazard(self.row_hazard)
                 if len(self.options_scenario) > 1:
@@ -501,39 +549,58 @@ class App():
                 None, u"Unable to initialize the Study Region. Please select another Study Region to continue. Error: " + str(sys.exc_info()[0]), u'HazPy - Message', 0)
 
     def handle_hazard(self, name, index, operation):
+        """handles the selection of a hazard from the hazard widget"""
         value = self.value_hazard.get()
+        # if value selected
         if value != '':
+            # update study region class with value
             self.studyRegion.setHazard(value)
             print('Hazard set as ' + str(value))
+
+            # get new scenario list
             self.options_scenario = self.studyRegion.getScenarios()
+            # remove previous scenario widget if exists
             try:
                 self.removeWidget_scenario()
             except:
                 pass
+            # add scenario widget if more than one option exists
             if len(self.options_scenario) > 1:
                 self.addWidget_scenario()
     
     def handle_scenario(self, name, index, operation):
+        """handles the selection of a scenario from the scenario widget"""
         value = self.value_scenario.get()
+        # if value selected
         if value != '':
+            # update study region class with value
             self.studyRegion.setScenario(value)
             print('Scenario set as ' + str(value))
+
+            # get new return period list
             self.options_returnPeriod = self.studyRegion.getReturnPeriods()
+            # remove previous return period widget if exists
             try:
                 self.removeWidget_returnPeriod()
             except:
                 pass
+            # add return period widget if more than one option exists
             if len(self.options_returnPeriod) > 1:
                 self.addWidget_returnPeriod()
 
     def handle_returnPeriod(self, name, index, operation):
+        """handles the selection of a return period from the return period widget"""
         value = self.value_returnPeriod.get()
+        # if value exists
         if value != '':
+            # update study region class with value
             self.studyRegion.setReturnPeriod(value)
             print('Return Period set as ' + str(value))
         
 
     def build_gui(self):
+        """ builds the GUI
+        """
         try:
             # initialize dropdown options
             options_studyRegion = getStudyRegions()
@@ -674,8 +741,8 @@ class App():
             messageBox = ctypes.windll.user32.MessageBoxW
             messageBox(0, "Unable to build the app: " + str(sys.exc_info()[0]) + " | If this problem persists, contact hazus-support@riskmapcds.com.", "HazPy", 0x1000)
 
-    # Run app
     def start(self):
+        """builds the GUI and starts the app"""
         self.build_gui()
         self.root.mainloop()
 
