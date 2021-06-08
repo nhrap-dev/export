@@ -334,6 +334,7 @@ class App():
                 value = self.dropdown_hazard.get()
                 if len(value) > 0:
                     self.studyRegion.setHazard(value)
+                    self.studyRegion.report.hazard = value
                 else:
                     self.selection_errors.append('Hazard')
                     validated = False
@@ -592,8 +593,6 @@ class App():
         if value != '':
             # update study region class with value
             self.studyRegion.setHazard(value)
-            print('Hazard set as ' + str(value))
-
             # get new scenario list
             self.options_scenario = self.studyRegion.getScenarios()
             # remove previous scenario widget if exists
@@ -612,8 +611,6 @@ class App():
         if value != '':
             # update study region class with value
             self.studyRegion.setScenario(value)
-            print('Scenario set as ' + str(value))
-
             # get new return period list
             self.options_returnPeriod = self.studyRegion.getReturnPeriods()
             # remove previous return period widget if exists
@@ -632,8 +629,6 @@ class App():
         if value != '':
             # update study region class with value
             self.studyRegion.setReturnPeriod(value)
-            print('Return Period set as ' + str(value))
-        
 
     def build_gui(self):
         """ builds the GUI
