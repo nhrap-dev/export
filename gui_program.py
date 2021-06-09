@@ -8,12 +8,12 @@ from tkinter import (BOTTOM, LEFT, RIGHT, TOP, Canvas, E, Label, N, OptionMenu,
                      PhotoImage, S, StringVar, W, filedialog, messagebox, ttk)
 from tkinter.ttk import Progressbar
 
+from PIL import Image, ImageTk
+
 from hazpy.hazusdb import HazusDB
 from hazpy.studyregion import StudyRegion
 from hazpy.studyregiondataframe import StudyRegionDataFrame
-from PIL import Image, ImageTk
-
-from draftemail import draftEmail
+from Python_env.draftemail import draftEmail
 
 
 class App():
@@ -331,6 +331,7 @@ class App():
                 value = self.dropdown_hazard.get()
                 if len(value) > 0:
                     self.studyRegion.setHazard(value)
+                    self.studyRegion.report.hazard = value
                 else:
                     self.selection_errors.append('Hazard')
                     validated = False

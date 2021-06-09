@@ -6,8 +6,9 @@ try:
         from manage import Manage
         manage = Manage()
     manage.checkForToolUpdates()
-    manage.checkForHazPyUpdates()
+    manage.checkForHazPyUpdates() # TODO: Remove or refactor this part - no longer needed (since env & tool will be together) - BC
 except Exception as e:
+    print(e)
     import ctypes
     import sys
     messageBox = ctypes.windll.user32.MessageBoxW

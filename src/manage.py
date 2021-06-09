@@ -1,21 +1,22 @@
-from subprocess import check_output, check_call, call, Popen
-import os
 import ctypes
-import sys
-import requests
-import pkg_resources
 import json
+import os
 import socket
+import sys
+from subprocess import Popen, call, check_call, check_output
+
+import pkg_resources
+import requests
 
 
 class Manage:
-
     def __init__(self):
 
         try:
             with open('./src/config.json') as configFile:
                 self.config = json.load(configFile)
-                self.tool_version_local = './src/__init__.py'
+                #self.tool_version_local = './src/__init__.py'
+                self.tool_version_local = 'version'
                 self.env_yaml = './src/environment.yaml'
         except:
             with open('./config.json') as configFile:
@@ -52,11 +53,12 @@ class Manage:
         """
         """
         path = os.environ['PATH']
-        condaPaths = [x for x in path.split(';') if 'conda' in x]
+        condaPaths = [x for x in path.split(';') if 'conda' or 'miniforge' in x]
         if len(condaPaths) > 0:
             return True
         return False
 
+# TODO: See if this is still needed - BC
     def createProxyEnv(self):
         """ Creates a copy of the os environmental variables with updated proxies
 
@@ -68,7 +70,7 @@ class Manage:
         newEnv["HTTPS_PROXY"] = self.proxy
         return newEnv
 
-
+# TODO: Refactor/update this - BC
     def setProxies(self):
         """ Temporarily updates the local environmental variables with updated proxies
         """
@@ -120,11 +122,12 @@ class Manage:
                 print("Installing {pp} - hold your horses, this could take a few minutes... but it's totally worth it".format(pp=self.python_package))
                 print('Conda is installing {pp}'.format(pp=self.python_package))
                 self.condaInstallHazPy()
-        except:
+        except Exception as e:
+            print(e)
             self.messageBox(0, u"An error occured. " + self.python_package +
                     u" was not installed. Please check your network settings and try again.", u"HazPy", 0x1000 | 0x4)
 
-
+# TODO: Remove this - no longer needed - BC
     def checkForHazPyUpdates(self):
         print('Checking for HazPy updates')
         if self.isCondaInPath(): # only create if conda in PATH
@@ -155,12 +158,15 @@ class Manage:
 
 
     def checkForToolUpdates(self):
+        """[summary]
+        """
         print('Checking for tool updates')
         try:
             with open(self.tool_version_local) as init:
                 text = init.readlines()
                 textBlob = ''.join(text)
-                installedVersion = self.parseVersionFromInit(textBlob)
+                #installedVersion = self.parseVersionFromInit(textBlob)  # TODO: Remove this - BC
+                installedVersion = textBlob
             try:
                 self.handleProxy()
                 req = requests.get(self.tool_version_url, timeout=self.http_timeout)
@@ -184,13 +190,13 @@ class Manage:
         except:
             self.messageBox(0, 'Unable to check for tool updates. If this error persists, contact hazus-support@riskmapcds.com for assistance.', "HazPy", 0x1000 | 0x4)
 
-
+# TODO: Refactor this - BC
     def updateTool(self):
 
         try:
             from distutils.dir_util import copy_tree
-            from shutil import rmtree
             from io import BytesIO
+            from shutil import rmtree
             from zipfile import ZipFile
 
             self.handleProxy()
@@ -208,7 +214,7 @@ class Manage:
             self.messageBox(
                 0, u'The tool update failed. If this error persists, contact hazus-support@riskmapcds.com for assistance.', u"HazPy", 0x1000 | 0x4)
 
-
+# TODO: Remove this - no longer needed - BC
     def parseVersionFromInit(self, textBlob):
         reqList = textBlob.split('\n')
         version = list(filter(lambda x: '__version__' in x, reqList))[0]
@@ -251,30 +257,37 @@ class Manage:
             # or the method was unable to connect using the hosts and ports
             return -1
 
+# TODO: See if this can be remove - BC
     def removeProxy(self):
         os.environ['HTTP_PROXY'] = ''
         os.environ['HTTPS_PROXY'] = ''
 
     def startApp(self, app_path, update_path):
+        """[summary]
+
+        Args:
+            app_path ([type]): [description]
+            update_path ([type]): [description]
+        """
         print('Opening the app and checking for updates')
 
         if self.isCondaInPath():
-            if self.conda_activate != None:
+            if self.conda_activate:
                 try:
                     # check if the virtual environment has been created
                     # release = self.config['release']
                     # virtual_env = self.config[release]['virtualEnvironment']
                     res = call('{ca} {ve}'.format(ca=self.conda_activate, ve=self.virtual_environment), shell=True)
                     if res != 0:
-                        # create the virtual environment
+                        # create the virtual environment('
                         self.createHazPyEnvironment()
                     else:
                         call('{ca} {ve} && start /min python {up}'.format(ca=self.conda_activate, ve=self.virtual_environment, up=update_path), shell=True)
-                        call('{ca} {ve} && start python {ap}'.format(ca=self.conda_activate, ve=self.virtual_environment, ap=app_path), shell=True)             
-                except Exception as e:
+                        call('{ca} {ve} && start python {ap}'.format(ca=self.conda_activate, ve=self.virtual_environment, ap=app_path), shell=True)
+                        #call('start python {ap}'.format(ap=app_path), shell=True)
+                except:
                     error = str(sys.exc_info()[0])
                     self.messageBox(0, u"Unexpected error: {er} | If this problem persists, contact hazus-support@riskmapcds.com.".format(er=error), u"HazPy", 0x1000 | 0x4)
-                    raise(e)
             else:
                 self.messageBox(0, u"Error: Anaconda was found in your system PATH variable, but was unable to activate. Please check to make sure your system PATH variable is pointing to the correct Anaconda root, bin, and scripts directories and try again.\nIf this problem persists, contact hazus-support@riskmapcds.com.", u"HazPy", 0x1000 | 0x4)
         else:
