@@ -3,7 +3,6 @@ channels:
   - nhrap
   - nsls2forge
   - conda-forge
-  - anaconda
   - defaults
 dependencies:
   - affine=2.3.0=py_0
@@ -166,5 +165,6 @@ dependencies:
   - zlib=1.2.11=vc14h1cdd9ab_1
   - zstd=1.4.8=h4e2f164_1
   - pip:
-      - osgeo==0.0.0
-      - git+https://github.com/nhrap-dev/hazpy.git@dev
+      - pymupdf==1.18.14
+      - colour==0.1.5
+      - git+https://github.com/nhrap-dev/hazpy.git@report-updates-HAZ-843
