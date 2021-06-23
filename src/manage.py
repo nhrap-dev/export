@@ -52,7 +52,7 @@ class Manage:
         """
         """
         path = os.environ['PATH']
-        condaPaths = [x for x in path.split(';') if 'conda' in x]
+        condaPaths = [x for x in path.split(';') if 'conda' or 'miniforge' in x]
         if len(condaPaths) > 0:
             return True
         return False
@@ -110,7 +110,6 @@ class Manage:
 
 
     def createHazPyEnvironment(self):
-
         returnValue = self.messageBox(None, u'The ' + self.python_package +
                                 u" python package is required to run this tool. Would you like to install it now?", u"HazPy", 0x1000 | 0x4)
         try:
@@ -186,7 +185,6 @@ class Manage:
 
 
     def updateTool(self):
-
         try:
             from distutils.dir_util import copy_tree
             from shutil import rmtree
@@ -257,13 +255,12 @@ class Manage:
 
     def startApp(self, app_path, update_path):
         print('Opening the app and checking for updates')
-
         if self.isCondaInPath():
             if self.conda_activate != None:
                 try:
                     # check if the virtual environment has been created
-                    # release = self.config['release']
-                    # virtual_env = self.config[release]['virtualEnvironment']
+                    release = self.config['release']
+                    virtual_env = self.config[release]['virtualEnvironment']
                     res = call('{ca} {ve}'.format(ca=self.conda_activate, ve=self.virtual_environment), shell=True)
                     if res != 0:
                         # create the virtual environment
