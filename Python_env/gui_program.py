@@ -620,7 +620,7 @@ class App():
                 pass
             # add return period widget if more than one option exists
             if len(self.options_returnPeriod) > 1:
-                self.addWidget_returnPeriod()
+                self.addWidget_returnPeriod(self.row_returnPeriod)
 
     def handle_returnPeriod(self, name, index, operation):
         """handles the selection of a return period from the return period widget"""
