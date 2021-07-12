@@ -1,4 +1,4 @@
-from src.manage import Manage
+from src.manage_new import Manage
 
 if __name__=='__main__':
     manage = Manage()

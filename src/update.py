@@ -1,14 +1,15 @@
 try:
     try:
-        from src.manage import Manage
+        from src.manage_new import Manage
         manage = Manage()
     except:
         from manage import Manage
         manage = Manage()
-    manage.checkForToolUpdates()
-    manage.checkForHazPyUpdates() # TODO: Remove or refactor this part - no longer needed (since env & tool will be together) - BC
-except Exception as e:
-    print(e)
+    try:
+        manage.checkForUpdates()
+    except Exception as e:
+        print(e)
+except:
     import ctypes
     import sys
     messageBox = ctypes.windll.user32.MessageBoxW

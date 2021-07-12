@@ -15,8 +15,8 @@ class Manage:
         try:
             with open('./src/config.json') as configFile:
                 self.config = json.load(configFile)
-                #self.tool_version_local = './src/__init__.py'
-                self.tool_version_local = 'version'
+                self.tool_version_local = './src/__init__.py'
+                #self.tool_version_local = 'version'
                 self.env_yaml = './src/environment.yaml'
         except:
             with open('./config.json') as configFile:
@@ -34,7 +34,7 @@ class Manage:
         self.virtual_environment = self.config[self.release]['virtualEnvironment']
         self.http_timeout = self.config[self.release]['httpTimeout']  # in seconds
 
-        self.conda_activate, self.conda_deactivate = self.getCondaActivateDeactivate()
+        #self.conda_activate, self.conda_deactivate = self.getCondaActivateDeactivate()
         # init message dialog box
         self.messageBox = ctypes.windll.user32.MessageBoxW
 
@@ -113,60 +113,27 @@ class Manage:
 
     def createHazPyEnvironment(self):
 
-        returnValue = self.messageBox(None, u'The ' + self.python_package +
-                                u" python package is required to run this tool. Would you like to install it now?", u"HazPy", 0x1000 | 0x4)
+        returnValue = self.messageBox(None, u'The newest Export Tool is required to run this tool. Would you like to install it now?', u"HazPy", 0x1000 | 0x4)
         try:
             if returnValue == 6:
                 ctypes.windll.user32.ShowWindow(
                     ctypes.windll.kernel32.GetConsoleWindow(), 1)
-                print("Installing {pp} - hold your horses, this could take a few minutes... but it's totally worth it".format(pp=self.python_package))
-                print('Conda is installing {pp}'.format(pp=self.python_package))
+                #print("Installing {pp} - hold your horses, this could take a few minutes... but it's totally worth it".format(pp=self.python_package))
+                #print('Conda is installing {pp}'.format(pp=self.python_package))
+                print('Conda is installing the Export Tool')
                 self.condaInstallHazPy()
         except Exception as e:
             print(e)
-            self.messageBox(0, u"An error occured. " + self.python_package +
-                    u" was not installed. Please check your network settings and try again.", u"HazPy", 0x1000 | 0x4)
+            self.messageBox(0, u"An error occured. The Export Tool was not installed. Please check your network settings and try again.", u"HazPy", 0x1000 | 0x4)
 
-# TODO: Remove this - no longer needed - BC
-    def checkForHazPyUpdates(self):
-        print('Checking for HazPy updates')
-        if self.isCondaInPath(): # only create if conda in PATH
-            try:
-                installedVersion = pkg_resources.get_distribution(self.python_package).version
-                try:
-                    self.handleProxy()
-                    req = requests.get(self.hazpy_version_url, timeout=self.http_timeout)
-                except:
-                    self.removeProxy()
-                    req = requests.get(self.hazpy_version_url, timeout=self.http_timeout)
-                status = req.status_code
-                if status == 200:
-                    newestVersion = self.parseVersionFromInit(req.text)
-                    if newestVersion != installedVersion:
-                        returnValue = self.messageBox(None, u"A new version of the " + self.python_package +
-                                                u" python package was found. Would you like to install it now?", u"HazPy", 0x1000 | 0x4)
-                        if returnValue == 6:
-                            self.messageBox(
-                                0, u'Updates are installing. We will let you know when its done!', u"HazPy", 0x1000 | 0x4)
-                            self.condaInstallHazPy()
-                    else:
-                        print(self.python_package + ' is up to date')
-                else:
-                    print('Unable to connect to the url: ' + self.hazpy_version_url)
-            except:
-                self.createHazPyEnvironment()
-
-
-    def checkForToolUpdates(self):
-        """[summary]
-        """
+    def checkForUpdates(self):
         print('Checking for tool updates')
         try:
             with open(self.tool_version_local) as init:
                 text = init.readlines()
                 textBlob = ''.join(text)
-                #installedVersion = self.parseVersionFromInit(textBlob)  # TODO: Remove this - BC
-                installedVersion = textBlob
+                installedVersion = self.parseVersionFromInit(textBlob)  # TODO: Remove this - BC
+                #installedVersion = textBlob
             try:
                 self.handleProxy()
                 req = requests.get(self.tool_version_url, timeout=self.http_timeout)
@@ -182,9 +149,13 @@ class Manage:
                         None, u"A new version of the tool was found. Would you like to install it now?", u"HazPy", 0x1000 | 0x4)
                     if returnValue == 6:
                         print('updating tool')
-                        self.updateTool()
+                        #self.updateTool()
+                        if self.isCondaInPath():
+                            self.condaInstallHazPy()
                 else:
-                    print('Tool is up to date')
+                    print('Tool is up to date.')
+                    
+                self.createHazPyEnvironment
             else:
                 print('Unable to connect to url: ' + self.tool_version_url)
         except:
@@ -270,24 +241,24 @@ class Manage:
             update_path ([type]): [description]
         """
         print('Opening the app and checking for updates')
-
         if self.isCondaInPath():
+            self.conda_activate, self.conda_deactivate = self.getCondaActivateDeactivate()
             if self.conda_activate:
                 try:
                     # check if the virtual environment has been created
-                    # release = self.config['release']
-                    # virtual_env = self.config[release]['virtualEnvironment']
                     res = call('{ca} {ve}'.format(ca=self.conda_activate, ve=self.virtual_environment), shell=True)
                     if res != 0:
-                        # create the virtual environment('
+                        # create the virtual environment
                         self.createHazPyEnvironment()
                     else:
                         call('{ca} {ve} && start /min python {up}'.format(ca=self.conda_activate, ve=self.virtual_environment, up=update_path), shell=True)
                         call('{ca} {ve} && start python {ap}'.format(ca=self.conda_activate, ve=self.virtual_environment, ap=app_path), shell=True)
-                        #call('start python {ap}'.format(ap=app_path), shell=True)
-                except:
-                    error = str(sys.exc_info()[0])
-                    self.messageBox(0, u"Unexpected error: {er} | If this problem persists, contact hazus-support@riskmapcds.com.".format(er=error), u"HazPy", 0x1000 | 0x4)
+                        call('start python {ap}'.format(ap=app_path), shell=True)
+                except Exception as e:
+                    print(e)
+                #except:
+                    #error = str(sys.exc_info()[0])
+                    #self.messageBox(0, u"Unexpected error: {er} | If this problem persists, contact hazus-support@riskmapcds.com.".format(er=error), u"HazPy", 0x1000 | 0x4)
             else:
                 self.messageBox(0, u"Error: Anaconda was found in your system PATH variable, but was unable to activate. Please check to make sure your system PATH variable is pointing to the correct Anaconda root, bin, and scripts directories and try again.\nIf this problem persists, contact hazus-support@riskmapcds.com.", u"HazPy", 0x1000 | 0x4)
         else:
