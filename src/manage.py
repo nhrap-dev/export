@@ -3,7 +3,7 @@ import json
 import os
 import socket
 import sys
-from subprocess import Popen, call, check_call, check_output
+from subprocess import Popen, call, check_call, check_output, run
 
 import pkg_resources
 import requests
@@ -34,7 +34,7 @@ class Manage:
         self.virtual_environment = self.config[self.release]['virtualEnvironment']
         self.http_timeout = self.config[self.release]['httpTimeout']  # in seconds
 
-        #self.conda_activate, self.conda_deactivate = self.getCondaActivateDeactivate()
+        self.conda_activate, self.conda_deactivate = self.getCondaActivateDeactivate()
         # init message dialog box
         self.messageBox = ctypes.windll.user32.MessageBoxW
 
@@ -83,7 +83,6 @@ class Manage:
     def condaInstallHazPy(self):
         """ Uses conda to install the latest version of hazpy
         """
-
         print('Checking for the conda environment {ve}'.format(ve=self.virtual_environment))
         try:
             try:
@@ -112,7 +111,6 @@ class Manage:
 
 
     def createHazPyEnvironment(self):
-
         returnValue = self.messageBox(None, u'The newest Export Tool is required to run this tool. Would you like to install it now?', u"HazPy", 0x1000 | 0x4)
         try:
             if returnValue == 6:
@@ -154,7 +152,6 @@ class Manage:
                             self.condaInstallHazPy()
                 else:
                     print('Tool is up to date.')
-                    
                 self.createHazPyEnvironment
             else:
                 print('Unable to connect to url: ' + self.tool_version_url)
@@ -242,18 +239,17 @@ class Manage:
         """
         print('Opening the app and checking for updates')
         if self.isCondaInPath():
-            self.conda_activate, self.conda_deactivate = self.getCondaActivateDeactivate()
             if self.conda_activate:
                 try:
-                    # check if the virtual environment has been created
-                    res = call('{ca} {ve}'.format(ca=self.conda_activate, ve=self.virtual_environment), shell=True)
-                    if res != 0:
-                        # create the virtual environment
+                    self.checkForUpdates()
+                    res = run('{ca} {ve}'.format(ca=self.conda_activate, ve=self.virtual_environment), shell=True, capture_output=True)
+                    if 'Could not find' in str(res):
+                        # create the virtual environment if it does not exists
                         self.createHazPyEnvironment()
                     else:
                         call('{ca} {ve} && start /min python {up}'.format(ca=self.conda_activate, ve=self.virtual_environment, up=update_path), shell=True)
                         call('{ca} {ve} && start python {ap}'.format(ca=self.conda_activate, ve=self.virtual_environment, ap=app_path), shell=True)
-                        call('start python {ap}'.format(ap=app_path), shell=True)
+                        #call('start python {ap}'.format(ap=app_path), shell=True)
                 except Exception as e:
                     print(e)
                 #except:
