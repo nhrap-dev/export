@@ -1,6 +1,6 @@
 try:
     try:
-        from src.manage_new import Manage
+        from src.manage import Manage
         manage = Manage()
     except:
         from manage import Manage
