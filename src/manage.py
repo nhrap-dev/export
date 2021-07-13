@@ -130,8 +130,7 @@ class Manage:
             with open(self.tool_version_local) as init:
                 text = init.readlines()
                 textBlob = ''.join(text)
-                installedVersion = self.parseVersionFromInit(textBlob)  # TODO: Remove this - BC
-                #installedVersion = textBlob
+                installedVersion = self.parseVersionFromInit(textBlob)
             try:
                 self.handleProxy()
                 req = requests.get(self.tool_version_url, timeout=self.http_timeout)
@@ -147,18 +146,15 @@ class Manage:
                         None, u"A new version of the tool was found. Would you like to install it now?", u"HazPy", 0x1000 | 0x4)
                     if returnValue == 6:
                         print('updating tool')
-                        #self.updateTool()
+                        self.updateTool()
                         if self.isCondaInPath():
                             self.condaInstallHazPy()
-                else:
-                    print('Tool is up to date.')
-                self.createHazPyEnvironment
+                #self.createHazPyEnvironment
             else:
                 print('Unable to connect to url: ' + self.tool_version_url)
         except:
             self.messageBox(0, 'Unable to check for tool updates. If this error persists, contact hazus-support@riskmapcds.com for assistance.', "HazPy", 0x1000 | 0x4)
 
-# TODO: Refactor this - BC
     def updateTool(self):
 
         try:
@@ -182,7 +178,6 @@ class Manage:
             self.messageBox(
                 0, u'The tool update failed. If this error persists, contact hazus-support@riskmapcds.com for assistance.', u"HazPy", 0x1000 | 0x4)
 
-# TODO: Remove this - no longer needed - BC
     def parseVersionFromInit(self, textBlob):
         reqList = textBlob.split('\n')
         version = list(filter(lambda x: '__version__' in x, reqList))[0]
@@ -241,7 +236,7 @@ class Manage:
         if self.isCondaInPath():
             if self.conda_activate:
                 try:
-                    self.checkForUpdates()
+                    #self.checkForUpdates()
                     res = run('{ca} {ve}'.format(ca=self.conda_activate, ve=self.virtual_environment), shell=True, capture_output=True)
                     if 'Could not find' in str(res):
                         # create the virtual environment if it does not exists
@@ -249,12 +244,10 @@ class Manage:
                     else:
                         call('{ca} {ve} && start /min python {up}'.format(ca=self.conda_activate, ve=self.virtual_environment, up=update_path), shell=True)
                         call('{ca} {ve} && start python {ap}'.format(ca=self.conda_activate, ve=self.virtual_environment, ap=app_path), shell=True)
-                        #call('start python {ap}'.format(ap=app_path), shell=True)
-                except Exception as e:
-                    print(e)
-                #except:
-                    #error = str(sys.exc_info()[0])
-                    #self.messageBox(0, u"Unexpected error: {er} | If this problem persists, contact hazus-support@riskmapcds.com.".format(er=error), u"HazPy", 0x1000 | 0x4)
+                        call('start python {ap}'.format(ap=app_path), shell=True)
+                except:
+                    error = str(sys.exc_info()[0])
+                    self.messageBox(0, u"Unexpected error: {er} | If this problem persists, contact hazus-support@riskmapcds.com.".format(er=error), u"HazPy", 0x1000 | 0x4)
             else:
                 self.messageBox(0, u"Error: Anaconda was found in your system PATH variable, but was unable to activate. Please check to make sure your system PATH variable is pointing to the correct Anaconda root, bin, and scripts directories and try again.\nIf this problem persists, contact hazus-support@riskmapcds.com.", u"HazPy", 0x1000 | 0x4)
         else:

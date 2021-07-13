@@ -5,10 +5,6 @@ try:
     except:
         from manage import Manage
         manage = Manage()
-    try:
-        manage.checkForUpdates()
-    except Exception as e:
-        print(e)
 except:
     import ctypes
     import sys

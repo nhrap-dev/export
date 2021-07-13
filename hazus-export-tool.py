@@ -6,6 +6,7 @@ if __name__=='__main__':
     app_path = 'gui_program.py'
     update_path = 'src/update.py'
     try:
+        manage.checkForUpdates()
         manage.startApp(app_path, update_path)
     except Exception as e:
         print(e)
