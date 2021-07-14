@@ -95,19 +95,17 @@ class Manage:
                 except:
                     call('{cd} && conda env remove -n {ve}'.format(cd=self.conda_deactivate, ve=self.virtual_environment), shell=True)
 
-            print('Installing {pp}'.format(pp=self.python_package))
-            self.handleProxy()
-            try:
-                check_call('{ca} {ve} && echo y | conda env update -n {ve} --file {ey}'.format(ca=self.conda_activate, ve=self.virtual_environment, ey=self.env_yaml), shell=True)
-            except:
-                call('echo y | conda env create --file {ey}'.format(ey=self.env_yaml), shell=True)
-                check_call('{ca} {ve} && echo y | conda env update -n {ve} --file {ey}'.format(ca=self.conda_activate, ve=self.virtual_environment, ey=self.env_yaml), shell=True)
+            #print('Installing {pp}'.format(pp=self.python_package))
+            #self.handleProxy()
+            # try:
+                # check_call('{ca} {ve} && echo y | conda env update -n {ve} --file {ey}'.format(ca=self.conda_activate, ve=self.virtual_environment, ey=self.env_yaml), shell=True)
+            # except:
+                # call('echo y | conda env create --file {ey}'.format(ey=self.env_yaml), shell=True)
+                # check_call('{ca} {ve} && echo y | conda env update -n {ve} --file {ey}'.format(ca=self.conda_activate, ve=self.virtual_environment, ey=self.env_yaml), shell=True)
 
-            self.messageBox(0, u'The ' + self.python_package +
-                    u" python package was successfully installed! The update will take effect when the tool is reopened.", u"HazPy", 0x1000 | 0x4)
+            self.messageBox(0, u'The Hazus Export Tool was successfully installed! The update will take effect when the tool is reopened.', u"HazPy", 0x1000 | 0x4)
         except:
-            self.messageBox(0, u'Unable to install ' + self.python_package +
-                    u'. If this error persists, contact hazus-support@riskmapcds.com for assistance.', u"HazPy", 0x1000 | 0x4)
+            self.messageBox(0, u'Unable to install the Hazus Export Tool If this error persists, contact hazus-support@riskmapcds.com for assistance.', u"HazPy", 0x1000 | 0x4)
 
 
     def createHazPyEnvironment(self):
@@ -225,7 +223,8 @@ class Manage:
         os.environ['HTTP_PROXY'] = ''
         os.environ['HTTPS_PROXY'] = ''
 
-    def startApp(self, app_path, update_path):
+    #def startApp(self, app_path, update_path):
+    def startApp(self, app_path):
         """[summary]
 
         Args:
@@ -242,9 +241,10 @@ class Manage:
                         # create the virtual environment if it does not exists
                         self.createHazPyEnvironment()
                     else:
-                        call('{ca} {ve} && start /min python {up}'.format(ca=self.conda_activate, ve=self.virtual_environment, up=update_path), shell=True)
-                        call('{ca} {ve} && start python {ap}'.format(ca=self.conda_activate, ve=self.virtual_environment, ap=app_path), shell=True)
-                        call('start python {ap}'.format(ap=app_path), shell=True)
+                        #call('{ca} {ve} && start /min python {up}'.format(ca=self.conda_activate, ve=self.virtual_environment, up=update_path), shell=True)
+                        #call('{ca} {ve} && start python {ap}'.format(ca=self.conda_activate, ve=self.virtual_environment, ap=app_path), shell=True)
+                        run('{ca} {ve} && start python {ap}'.format(ca=self.conda_activate, ve=self.virtual_environment, ap=app_path), shell=True)
+                        #call('start python {ap}'.format(ap=app_path), shell=True)
                 except:
                     error = str(sys.exc_info()[0])
                     self.messageBox(0, u"Unexpected error: {er} | If this problem persists, contact hazus-support@riskmapcds.com.".format(er=error), u"HazPy", 0x1000 | 0x4)
