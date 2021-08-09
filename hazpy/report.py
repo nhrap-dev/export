@@ -12,6 +12,7 @@ import seaborn as sns
 import warnings
 from colour import Color
 from jenkspy import jenks_breaks as nb
+import math
 from matplotlib import pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap, Normalize
 from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
@@ -20,6 +21,7 @@ from PyPDF2.generic import BooleanObject, IndirectObject, NameObject, TextString
 from shapely.wkt import loads
 from uuid import uuid4 as uuid
 from xhtml2pdf import pisa
+import contextily as cx
 
 # Disable pandas warnings
 warnings.filterwarnings('ignore')
@@ -69,10 +71,30 @@ class Report:
         self.icon = self.assets[icon]
         self.templateFillableLocation = 'Python_env/assets/templates'
         self.disclaimer = """The estimates of social and economic impacts contained in this report were produced using Hazus loss estimation methodology software which is based on current scientific and engineering knowledge. There are uncertainties inherent in any loss estimation
-            technique. Therefore, there may be significant differences between the modeled results contained in this report and the actual social and economic losses following a specific earthquake. These results can be improved by using enhanced inventory, geotechnical,
-            and observed ground motion data."""
+            technique. Therefore, there may be significant differences between the modeled results contained in this report and the actual social and economic losses following a specific {}. These results can be improved by using enhanced inventory, geotechnical,
+            and observed ground motion data.""".format(self.hazard)
         self.getCounties = studyRegionClass.getCounties
         self._tempDirectory = 'hazpy-report-temp'
+
+    def format_tick(self, num, pos):
+        magnitude = 0
+        while abs(num) >= 1000:
+            magnitude += 1
+            num /= 1000.0
+        # add more suffixes if you need them
+        if self.hazard == 'flood':
+            #return '$%.0f%s' % (num, ['', ' K', ' M', ' B', ' T'][magnitude])
+            return '$%.2f%s' % (num, ['', ' K', ' M', ' B', ' T'][magnitude])
+        else:
+            #return '%.0f%s' % (num, ['', ' K', ' M', ' B', ' T'][magnitude])
+            return '%.2f%s' % (num, ['', ' K', ' M', ' B', ' T'][magnitude])
+
+    # def format_tick(self, num, pos):
+    #     millnames = ['',' K',' M',' B',' T']
+    #     n = float(num)
+    #     millidx = max(0,min(len(millnames)-1,
+    #                         int(math.floor(0 if n == 0 else math.log10(abs(n))/3))))
+    #     return '{:.0f}{}'.format(n / 10**(3 * millidx), millnames[millidx])
 
     def abbreviate(self, number):
         try:
@@ -533,33 +555,39 @@ class Report:
             boundary(optional): bool -- if True, will include the hazard boundary to the map; default = True
         """
         try:
-            fig = plt.figure(figsize=(3, 3), dpi=300)
+            fig = plt.figure(figsize=(10, 10), dpi=300)
             # Set background color to light grey
-            fig.patch.set_facecolor('#e1e1e1')
+            #fig.patch.set_facecolor('#e1e1e1')
             ax = fig.gca()
             ax2 = fig.gca()
-
+            crs = 'epsg:4326'
             # Add hazard boundary to map
             if boundary:
                 boundary = self._Report__getHazardBoundary()
                 if type(boundary) != gpd.GeoDataFrame:
                     try:
-                        crs = {'init' :'epsg:4326'}
                         boundary['geometry'] = boundary['geometry'].apply(str)
                         boundary['geometry'] = boundary['geometry'].apply(loads)
                         boundary = gpd.GeoDataFrame(boundary, geometry='geometry', crs=crs)
                     except:
                         boundary['geometry'] = boundary['geometry'].apply(loads)
+                        boundary = gpd.GeoDataFrame(boundary, geometry='geometry', crs=crs)
                 # Apply minimal buffer to not cover hazards near study area boundary
                 boundary['geometry'] = boundary.geometry.buffer(.0005)
-               # boundary.crs = "EPSG:4326"
-                boundary.plot(ax=ax, facecolor="none", edgecolor="darkgray", linewidth=0.5, alpha=0.7, linestyle='solid')
+                boundary.to_crs('EPSG:3857').plot(ax=ax, facecolor="none", edgecolor="darkgray", linewidth=0.5, alpha=0.7, linestyle='solid')
+            # if not hasattr(gdf, 'crs'):
+            #         #gdf.crs={'init': 'epsg:4326'}
+            #         gdf.crs='epsg:4326'
+            #         gdf.set_crs('epsg:4326')
             if type(gdf) != gpd.GeoDataFrame:
-                crs = {'init' :'epsg:4326'}
                 gdf['geometry'] = gdf['geometry'].apply(str)
                 gdf['geometry'] = gdf['geometry'].apply(loads)
                 gdf = gpd.GeoDataFrame(gdf, geometry='geometry', crs=crs)
+            
+            gdf.crs='epsg:4326'
+
             try:
+                gdf.to_crs('epsg:3857', inplace=True)
                 gdf.plot(
                     column=field,
                     cmap=cmap,
@@ -569,8 +597,9 @@ class Report:
                     norm=norm
                 )
             except:
+                gdf['geometry'] = gdf['geometry'].apply(str)
                 gdf['geometry'] = gdf['geometry'].apply(loads)
-                gdf.plot(
+                gdf.to_crs('EPSG:3857').plot(
                     column=field,
                     cmap=cmap,
                     ax=ax,
@@ -578,6 +607,8 @@ class Report:
                     classification_kwds=classification_kwds,
                     norm=norm
                 )
+            # add basemap
+            cx.add_basemap(ax, source=cx.providers.Esri.WorldGrayCanvas)
             if legend == True:
                 sm = plt.cm.ScalarMappable(
                     cmap=cmap,
@@ -647,17 +678,19 @@ class Report:
             ax.axis('off')
             ax.axis('scaled')
             # Zoom into data extents
-            # xlim = ([gdf.total_bounds[0],  gdf.total_bounds[2]])
-            # ylim = ([gdf.total_bounds[1],  gdf.total_bounds[3]])
-            # ax.set_xlim(xlim)
-            # ax.set_ylim(ylim)
+            xlim = ([gdf.total_bounds[0],  gdf.total_bounds[2]])
+            ylim = ([gdf.total_bounds[1],  gdf.total_bounds[3]])
+            ax.set_xlim(xlim)
+            ax.set_ylim(ylim)
             # # else:
-            ax.autoscale(enable=True, axis='both', tight=False)
+            # TODO: Review this - BC
+            #ax.autoscale(enable=True, axis='both', tight=False)
             src = os.getcwd() + '/' + self._tempDirectory + '/' + str(uuid()) + ".png"
+            # TODO: Review pad_inches - BC
             fig.savefig(
                 src,
                 facecolor=fig.get_facecolor(),
-                pad_inches=0.25,
+                #pad_inches=0.25,
                 bbox_inches='tight',
                 dpi=600,
             )
@@ -697,37 +730,37 @@ class Report:
             title = 'map-' + title
             if self.hazard == 'flood':
                 if title == 'map-Economic Loss by Census Block':
-                    x1 = 322
-                    y1 = 136
-                    x2 = 594
+                    x1 = 319
+                    y1 = 133
+                    x2 = 597
                     y2 = 372
                 if title == 'map-Water Depth (ft) - 100-year':
-                    x1 = 322
-                    y1 = 425
-                    x2 = 594
-                    y2 = 660
+                    x1 = 319
+                    y1 = 407
+                    x2 = 597
+                    y2 = 628
             if self.hazard == 'earthquake':
                 if title == 'map-Economic Loss by Census Tract (USD)':
                     x1 = 322
-                    y1 = 136
+                    y1 = 140
                     x2 = 594
-                    y2 = 372
+                    y2 = 390
                 if title == 'map-Peak Ground Acceleration (g)':
-                    x1 = 322
+                    x1 = 315
                     y1 = 425
-                    x2 = 594
+                    x2 = 590
                     y2 = 660
             if self.hazard == 'hurricane':
                 if title == 'map-Economic Loss by Census Tract (USD)':
-                    x1 = 322
-                    y1 = 145
-                    x2 = 594
-                    y2 = 252
+                    x1 = 315
+                    y1 = 130
+                    x2 = 602
+                    y2 = 380
                 if title == 'map-Historic Wind Speeds (mph)':
-                    x1 = 322
-                    y1 = 450
-                    x2 = 594
-                    y2 = 552
+                    x1 = 315
+                    y1 = 410
+                    x2 = 602
+                    y2 = 630
             if self.hazard == 'tsunami':
                 if title == 'map-Economic Loss by Census Block (USD)':
                     x1 = 322
@@ -741,9 +774,9 @@ class Report:
                     y2 = 750
                 if title == 'map-Water Depth (ft)':
                     x1 = 322
-                    y1 = 475
+                    y1 = 410
                     x2 = 594
-                    y2 = 685
+                    y2 = 640
             try:
                 self.insert_image_to_pdf(src, title, x1, y1, x2, y2)
             except:
@@ -775,7 +808,7 @@ class Report:
             colors (optional if len(yCols) == 3): list<str> -- the colors for each field in yCols - should be same length (default = ['#549534', '#f3de2c', '#bf2f37'])
         """
         try:
-            x = [x for x in df[xCol].values] * len(yCols)
+            x = [x.replace('ManufHousing', 'Manufactured\nHousing') for x in df[xCol].values] * len(yCols)
             y = []
             hue = []
             for valueColumn in yCols:
@@ -793,7 +826,8 @@ class Report:
             plt.xticks(fontsize=8)
             plt.yticks(fontsize=8)
             fmt = '{x:,.0f}'
-            tick = ticker.StrMethodFormatter(fmt)
+            #tick = ticker.StrMethodFormatter(fmt)
+            tick = ticker.FuncFormatter(self.format_tick)
             ax.yaxis.set_major_formatter(tick)
             plt.ylabel(ylabel, fontsize=9)
             plt.tight_layout(pad=0.1, h_pad=None, w_pad=None, rect=None)
@@ -834,34 +868,36 @@ class Report:
                 self.columnRight = self.columnRight + template
             if self.hazard == 'flood':
                 if title == 'Building Damage By Occupancy':
-                    x1 = 0
+                    x1 = 19
                     y1 = 116
-                    x2 = 288
-                    y2 = 240
+                    x2 = 297
+                    y2 = 245
                 if title == 'Building Damage By Type':
-                    x1 = 0
-                    y1 = 444
-                    x2 = 288
+                    x1 = 19
+                    y1 = 432
+                    x2 = 297
                     y2 = 568
             if self.hazard == 'hurricane':
                 if title == 'Building Damage By Occupancy':
-                    x1 = 18
+                    x1 = 19
                     y1 = 116
-                    x2 = 252
-                    y2 = 240
+                    x2 = 297
+                    y2 = 250
                 if (
                     title == 'Damaged Essential Facilities'
                 ):  # TODO: Add ticks to side of chart - BC
-                    x1 = 18
-                    y1 = 444
-                    x2 = 252
+                    x1 = 19
+                    y1 = 434
+                    x2 = 297
                     y2 = 568
             if self.hazard == 'tsunami':
                 if title == 'Building Damage By Occupancy':
-                    x1 = 0
-                    y1 = 116
-                    x2 = 288
-                    y2 = 228
+                    x1 = 19
+                    #y1 = 116
+                    y1 = 112
+                    x2 = 297
+                    #y2 = 228
+                    y2 = 234
 
             if self.hazard != 'earthquake':
                 self.insert_image_to_pdf(src, title, x1, y1, x2, y2)
@@ -935,7 +971,7 @@ class Report:
         imageRectangle = fitz.Rect(x1, y1, x2, y2)
         firstPage = template[0]
         firstPage.insertImage(
-            imageRectangle, filename=imageFile, keep_proportion=True)
+            imageRectangle, filename=imageFile, keep_proportion=False)
         template.save(
             template.name,
             deflate=True,
@@ -1646,6 +1682,7 @@ class Report:
                         .sum()
                         .reset_index()
                     )
+
                     self.addHistogram(
                         buildingDamageByOccupancy,
                         'xCol',
@@ -1924,30 +1961,64 @@ class Report:
                 ###################################
                 # add debris
                 try:
+                # FinishTonsTotal,
+                #  StructureTonsTotal,
+                #  FoundationTonsTotal,
+                # DebrisTotal
                     # populate and format values
+                    # tons = self.addCommas(
+                    #     results['DebrisTotal'].sum(), abbreviate=True)
                     tons = self.addCommas(
                         results['DebrisTotal'].sum(), abbreviate=True)
+                    # truckLoads = self.addCommas(
+                    #     results['DebrisTotal'].sum() * tonsToTruckLoadsCoef,
+                    #     abbreviate=True,
+                    # )
                     truckLoads = self.addCommas(
                         results['DebrisTotal'].sum() * tonsToTruckLoadsCoef,
                         abbreviate=True,
                     )
+                    totalFinish = self.addCommas(
+                        results['FinishTonsTotal'].sum(), abbreviate=True)
+                    totalStructure = self.addCommas(
+                        results['StructureTonsTotal'].sum(), abbreviate=True)
+                    totalFoundation = self.addCommas(
+                        results['FoundationTonsTotal'].sum() * tonsToTruckLoadsCoef,
+                        abbreviate=True,
+                    )
                     # populate totals
+                    
                     totalTons = tons
                     totalTruckLoads = truckLoads
                     total = totalTons + ' Tons/' + totalTruckLoads + ' Truck Loads'
 
                     # build data dictionary
+                    # data = {
+                    #     'Debris Type': ['All Debris (finishes, structure and foundation)'],
+                    #     'Tons': [tons],
+                    #     'Truck Loads': [truckLoads],
+                    # }
                     data = {
-                        'Debris Type': ['All Debris'],
-                        'Tons': [tons],
-                        'Truck Loads': [truckLoads],
+                        'Debris Type': ['Foundation', 'Finish', 'Structure'],
+                        'Tons': [totalFoundation, totalFinish, totalStructure],
+                        'Truck Loads': [totalFoundation, totalFinish, totalStructure],
                     }
+                    truckLoads = self.addCommas(
+                        results['DebrisTotal'] * tonsToTruckLoadsCoef,
+                        abbreviate=True,
+                    )
                     # create DataFrame from data dictionary
                     debris = pd.DataFrame(
                         data, columns=['Debris Type', 'Tons', 'Truck Loads']
                     )
-                    floodDataDictionary['debris_type_1'] = debris['Debris Type'][0]
-                    floodDataDictionary['debris_tons_1'] = totalTons
+                    # floodDataDictionary['debris_type_1'] = debris['Debris Type'][0]
+                    # floodDataDictionary['debris_tons_1'] = totalTons
+                    floodDataDictionary['debris_type_1'] = "Finish"
+                    floodDataDictionary['debris_tons_1'] = totalFinish
+                    floodDataDictionary['debris_type_2'] = "Foundation"
+                    floodDataDictionary['debris_tons_2'] = totalFoundation
+                    floodDataDictionary['debris_type_3'] = "Structure"
+                    floodDataDictionary['debris_tons_3'] = totalStructure
                     floodDataDictionary['total_debris_tons'] = totalTons
                     floodDataDictionary['total_debris_truckloads'] = totalTruckLoads
                     self.addTable(debris, 'Debris', total, 'right')
@@ -2003,7 +2074,7 @@ class Report:
                         'xCol',
                         yCols,
                         'Building Damage By Occupancy',
-                        'Buildings',
+                        'Building Count',
                         'left',
                     )
                 except:
@@ -2075,6 +2146,14 @@ class Report:
                         .sum()
                         .reset_index()
                     )
+                    # Rename rows in FacilityType column
+                    essentialFacilities['FacilityType'] = essentialFacilities['FacilityType'].replace({
+                        'CareFlty' : 'Care Facilities',
+                        'FireStation' : 'Fire Stations',
+                        'PoliceStation' : 'Police Stations',
+                        'School': 'Schools'
+                    })
+
                     # list columns to group for each category
                     yCols = ['Affected', 'Minor', 'Major & Destroyed']
                     self.addHistogram(
@@ -2387,7 +2466,7 @@ class Report:
                         'xCol',
                         yCols,
                         'Building Damage By Occupancy',
-                        'Buildings',
+                        'Building Count',
                         'left',
                     )
                 except:
@@ -2426,7 +2505,7 @@ class Report:
                     )[0:tableRowLimit]
                     # format values
                     economicLoss['EconLoss'] = [
-                        self.toDollars(x, abbreviate=True)
+                        self.toDollars(x, abbreviate=True, truncate=True)
                         for x in economicLoss['EconLoss']
                     ]
                     columns = {
@@ -2436,7 +2515,7 @@ class Report:
                     }
                     self.insert_fillable_pdf(
                         economicLoss, tsDataDictionary, columns)
-                    tsDataDictionary['total_econloss'] = total
+                    tsDataDictionary['total_econloss'] = '$' + str(total)
                     #  'total_econloss': total - Add to table
                     self.addTable(
                         economicLoss, 'Total Economic Loss', total, 'left')
@@ -2638,7 +2717,8 @@ class Report:
                     gdf = self._Report__getHazardGeoDataFrame()
                     title = gdf.title
                     gdf = gdf[gdf['PARAMVALUE'] > 0.1]
-                    map_colors = ['#e2edff', '#92c4de', '#3282be', '#083572']
+                    #map_colors = ['#e2edff', '#92c4de', '#3282be', '#083572']
+                    map_colors = ['#00FFFF', '#55AAFF', '#AA55FF', '#FF00FF']
                     color_ramp = LinearSegmentedColormap.from_list(
                         'color_list', [
                             Color(color).rgb for color in map_colors]
@@ -2692,8 +2772,8 @@ class Report:
                 try:
                     travelTimeToSafety = self._Report__getTravelTimeToSafety()
                     title = 'Travel Time to Safety (minutes)'
-                    bins = [15, 30, 45, 60, 75, 90, 105, 1000]
-                    scheme = 'userdefined'
+                    #bins = [15, 30, 45, 60, 75, 90, 105, 1000]
+                    #scheme = 'userdefined'
                     map_colors = [
                         '#f5e76b',
                         '#eacd60',
@@ -2708,7 +2788,59 @@ class Report:
                         'color_list', [
                             Color(color).rgb for color in map_colors]
                     )
-                    classification_kwds = {'bins': bins}
+
+                    breaks = nb(travelTimeToSafety['travelTimeOver65yo'], nb_class=7)
+                    # breaks = self.equal_interval(
+                    #     travelTimeToSafety['travelTimeOver65yo'].to_list(), 7)
+                    tt_legend0 = breaks[0]
+                    tt_legend1 = breaks[1]
+                    tt_legend2 = breaks[2]
+                    tt_legend3 = breaks[3]
+                    tt_legend4 = breaks[4]
+                    tt_legend5 = breaks[5]
+                    tt_legend6 = breaks[6]
+                    tt_legend7 = breaks[7]
+                    tsDataDictionary['tt_legend0'] = (
+                        self.abbreviate(tt_legend0)
+                        + '-'
+                        + self.abbreviate(tt_legend1 - 1)
+                    )
+                    tsDataDictionary['tt_legend1'] = (
+                        self.abbreviate(tt_legend1)
+                        + '-'
+                        + self.abbreviate(tt_legend2 - 1)
+                    )
+                    tsDataDictionary['tt_legend2'] = (
+                        self.abbreviate(tt_legend2)
+                        + '-'
+                        + self.abbreviate(tt_legend3 - 1)
+                    )
+                    tsDataDictionary['tt_legend3'] = (
+                        self.abbreviate(tt_legend3)
+                        + '-'
+                        + self.abbreviate(tt_legend4 - 1)
+                    )
+                    tsDataDictionary['tt_legend4'] = (
+                        self.abbreviate(tt_legend4)
+                        + '-'
+                        + self.abbreviate(tt_legend5 - 1)
+                    )
+                    tsDataDictionary['tt_legend5'] = (
+                        self.abbreviate(tt_legend5)
+                        + '-'
+                        + self.abbreviate(tt_legend6 - 1)
+                    )
+                    tsDataDictionary['tt_legend6'] = (
+                        self.abbreviate(tt_legend6)
+                        + '-'
+                        + self.abbreviate(tt_legend7 - 1)
+                    )
+                    tsDataDictionary['tt_legend7'] = (
+                        self.abbreviate(tt_legend7)
+                        + '+'
+                    )
+
+                    #classification_kwds = {'bins': bins}
                     self.addMap(
                         travelTimeToSafety,
                         title=title,
@@ -2716,9 +2848,9 @@ class Report:
                         field='travelTimeOver65yo',
                         formatTicks=False,
                         cmap=color_ramp,
-                        scheme=scheme,
-                        classification_kwds=classification_kwds,
-                        norm=Normalize(0, len(bins))
+                        scheme='equalinterval'
+                        #classification_kwds=classification_kwds,
+                        #norm=Normalize(0, len(bins))
                     )
                 except:
                     print("Unexpected error:", sys.exc_info()[0])

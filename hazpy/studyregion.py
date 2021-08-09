@@ -641,7 +641,11 @@ class StudyRegion:
                     s=self.name, c=constant
                 ),
                 "flood": """select CensusBlock as block, 
-                SUM(FinishTons) * {c} as DebrisTotal from {s}.dbo.flFRDebris
+                SUM(FinishTons) * {c} as FinishTonsTotal,
+                SUM(StructureTons) * {c} as StructureTonsTotal,
+                SUM(FoundationTons) * {c} as FoundationTonsTotal,
+                SUM(FinishTons) + SUM(StructureTons) + SUM(FoundationTons) as DebrisTotal
+                 from {s}.dbo.flFRDebris
                     where StudyCaseId = (select StudyCaseID from {s}.[dbo].[flStudyCase] where StudyCaseName = '{sc}')
                     and ReturnPeriodId = '{rp}'
                     group by CensusBlock""".format(

@@ -3,14 +3,17 @@ import json
 import os
 import sys
 import tkinter as tk
-from time import sleep, time
-from tkinter import (BOTTOM, LEFT, RIGHT, TOP, Canvas, E, Label, N, OptionMenu,
-                     PhotoImage, S, StringVar, W, filedialog, messagebox, ttk)
+#from time import sleep, time
+from time import time
+# from tkinter import (BOTTOM, LEFT, RIGHT, TOP, Canvas, E, Label, N, OptionMenu,
+#                      PhotoImage, S, StringVar, W, filedialog, messagebox, ttk)
+
+from tkinter import StringVar, W, filedialog, ttk, messagebox
 from tkinter.ttk import Progressbar
 
 from hazpy.hazusdb import HazusDB
 from hazpy.studyregion import StudyRegion
-from hazpy.studyregiondataframe import StudyRegionDataFrame
+#from hazpy.studyregiondataframe import StudyRegionDataFrame
 from PIL import Image, ImageTk
 
 from Python_env.draftemail import draftEmail
@@ -578,14 +581,7 @@ class App():
                     self.text_outputDirectory.delete("1.0", 'end-1c')
                     self.text_outputDirectory.insert(
                         "1.0", self.outputDirectory + '/' + self.studyRegion.name)
-        except Exception as e:
-            print('\n')
-            print(e)
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            print(fname)
-            print(exc_type, exc_tb.tb_lineno)
-            print('\n')
+        except:
             ctypes.windll.user32.MessageBoxW(
                 None, u"Unable to initialize the Study Region. Please select another Study Region to continue. Error: " + str(sys.exc_info()[0]), u'HazPy - Message', 0)
 
