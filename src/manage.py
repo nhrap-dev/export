@@ -53,9 +53,12 @@ class Manage:
         """
         """
         path = os.environ['PATH']
-        condaPaths = [x for x in path.split(';') if 'conda' or 'miniforge' in x]
+        condaPaths = [x for x in path.split(';') if 'conda' in x or 'miniforge' in x]
         if len(condaPaths) > 0:
             return True
+        # TODO: else --> download Miniforge for user
+        # else:
+        #     downloadMiniforge
         return False
 
 # TODO: See if this is still needed - BC
