@@ -280,10 +280,10 @@ class StudyRegion:
                     s=self.name, sc=self.scenario, rp=self.returnPeriod
                 ),
                 "tsunami": """select CBFips as block,
-                        ISNULL(count(case when BldgLoss/NULLIF(ValStruct+ValCont, 0) <=0.05 then 1 end), 0) as Affected,
-                        ISNULL(count(case when BldgLoss/NULLIF(ValStruct+ValCont, 0) > 0.05 and BldgLoss/(ValStruct+ValCont) <=0.3 then 1 end), 0) as Minor,
-                        ISNULL(count(case when BldgLoss/NULLIF(ValStruct+ValCont, 0) > 0.3 and BldgLoss/(ValStruct+ValCont) <=0.5 then 1 end), 0) as Major,
-                        ISNULL(count(case when BldgLoss/NULLIF(ValStruct+ValCont, 0) >0.5 then 1 end), 0) as Destroyed
+                        ISNULL(count(case when BldgLoss/NULLIF(ValStruct, 0) <= 0.05 then 1 end), 0) as Affected,
+                        ISNULL(count(case when BldgLoss/NULLIF(ValStruct, 0) > 0.05 and BldgLoss/(ValStruct) <= 0.3 then 1 end), 0) as Minor,
+                        ISNULL(count(case when BldgLoss/NULLIF(ValStruct, 0) > 0.3 and BldgLoss/(ValStruct) <= 0.5 then 1 end), 0) as Major,
+                        ISNULL(count(case when BldgLoss/NULLIF(ValStruct, 0) > 0.5 then 1 end), 0) as Destroyed
                         from (select NsiID, ValStruct, ValCont  from {s}.dbo.tsHazNsiGbs) haz
                             left join (select NsiID, CBFips from {s}.dbo.tsNsiGbs) gbs
                             on haz.NsiID = gbs.NsiID
@@ -337,7 +337,34 @@ class StudyRegion:
                         GROUP BY GenBldgOrGenOcc""".format(
                     s=self.name, sc=self.scenario, rp=self.returnPeriod
                 ),
-                "tsunami": """SELECT LEFT({s}.dbo.tsHazNsiGbs.NsiID, 3) As Occupancy,
+                # "tsunami": """SELECT LEFT({s}.dbo.tsHazNsiGbs.NsiID, 3) As Occupancy,
+                #         COUNT({s}.dbo.tsHazNsiGbs.NsiID) As Total,
+                #         COUNT(CASE WHEN {s}.dbo.tsHazNsiGbs.ValStruct > 0 AND {s}.dbo.tsHazNsiGbs.ValCont > 0 AND
+                #         (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct+{s}.dbo.tsHazNsiGbs.ValCont))
+                #         <= 0.05 THEN 1 ELSE NULL END) As Affected,
+                #         COUNT(CASE WHEN {s}.dbo.tsHazNsiGbs.ValStruct > 0 AND {s}.dbo.tsHazNsiGbs.ValCont > 0 AND
+                #         (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct+{s}.dbo.tsHazNsiGbs.ValCont))
+                #         > 0.05 AND (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct+{s}.dbo.tsHazNsiGbs.ValCont))
+                #         <= 0.3 THEN 1 ELSE NULL END) As Minor,
+                #         COUNT(CASE WHEN {s}.dbo.tsHazNsiGbs.ValStruct > 0 AND {s}.dbo.tsHazNsiGbs.ValCont > 0 AND
+                #         (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct+{s}.dbo.tsHazNsiGbs.ValCont))
+                #         > 0.3 AND (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct+{s}.dbo.tsHazNsiGbs.ValCont))
+                #         <= 0.5 THEN 1 ELSE NULL END) As Major,
+                #         COUNT(CASE WHEN {s}.dbo.tsHazNsiGbs.ValStruct > 0 AND {s}.dbo.tsHazNsiGbs.ValCont > 0 AND
+                #         (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct+{s}.dbo.tsHazNsiGbs.ValCont))
+                #         > 0.5 THEN 1 ELSE NULL END) As Destroyed
+                #         FROM {s}.dbo.tsHazNsiGbs FULL JOIN {s}.dbo.tsNsiGbs
+                #         ON {s}.dbo.tsHazNsiGbs.NsiID = {s}.dbo.tsNsiGbs.NsiID
+                #         FULL JOIN [{s}].[dbo].[tsFRNsiGbs] ON {s}.dbo.tsNsiGbs.NsiID =
+                #         [{s}].[dbo].[tsFRNsiGbs].NsiID WHERE {s}.dbo.tsHazNsiGbs.NsiID IS NOT NULL
+                #         GROUP BY LEFT({s}.dbo.tsHazNsiGbs.NsiID, 3)""".format(
+                #     s=self.name
+                # ),
+                "tsunami": """SELECT 
+                        CASE 
+                            WHEN CHARINDEX('_', tsHazNsiGbs.NsiID) > 0 THEN LEFT(PARSENAME(REPLACE(tsHazNsiGbs.NsiID, '_', '.'), 2), 3)
+                            ELSE LEFT(tsHazNsiGbs.NsiID, 3)
+                        END As Occupancy,
                         COUNT({s}.dbo.tsHazNsiGbs.NsiID) As Total,
                         COUNT(CASE WHEN {s}.dbo.tsHazNsiGbs.ValStruct > 0 AND {s}.dbo.tsHazNsiGbs.ValCont > 0 AND
                         (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct+{s}.dbo.tsHazNsiGbs.ValCont))
@@ -357,7 +384,11 @@ class StudyRegion:
                         ON {s}.dbo.tsHazNsiGbs.NsiID = {s}.dbo.tsNsiGbs.NsiID
                         FULL JOIN [{s}].[dbo].[tsFRNsiGbs] ON {s}.dbo.tsNsiGbs.NsiID =
                         [{s}].[dbo].[tsFRNsiGbs].NsiID WHERE {s}.dbo.tsHazNsiGbs.NsiID IS NOT NULL
-                        GROUP BY LEFT({s}.dbo.tsHazNsiGbs.NsiID, 3)""".format(
+                        GROUP BY
+                        CASE 
+                            WHEN CHARINDEX('_', tsHazNsiGbs.NsiID) > 0 THEN LEFT(PARSENAME(REPLACE(tsHazNsiGbs.NsiID, '_', '.'), 2), 3)
+                            ELSE LEFT(tsHazNsiGbs.NsiID, 3)
+                        END""".format(
                     s=self.name
                 ),
             }
@@ -1022,7 +1053,8 @@ class StudyRegion:
                     except:
                         pass
                 gdf = gpd.GeoDataFrame.from_features(geoms)
-                gdf.PARAMVALUE[gdf.PARAMVALUE > 60] = 0 # TODO: Review this - BC
+                # TODO: Review this - BC
+                gdf.PARAMVALUE[gdf.PARAMVALUE > 60] = 0
                 gdf.crs = crs
                 gdf.geometry = gdf.geometry.to_crs(epsg=4326)
                 hazardDict["Water Depth (ft)"] = gdf

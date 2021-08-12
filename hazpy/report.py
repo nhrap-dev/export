@@ -741,9 +741,9 @@ class Report:
                     y2 = 628
             if self.hazard == 'earthquake':
                 if title == 'map-Economic Loss by Census Tract (USD)':
-                    x1 = 322
-                    y1 = 140
-                    x2 = 594
+                    x1 = 319
+                    y1 = 114
+                    x2 = 597
                     y2 = 390
                 if title == 'map-Peak Ground Acceleration (g)':
                     x1 = 315
@@ -1072,8 +1072,13 @@ class Report:
             data_dict (dict): [description]
             path (str): [description]
         """
+        #title = self.title.replace(' ', '-')
+        #outputPdf = ''.join(filter(str.isalnum, self.title))
         outputPdf = path.replace(
-            'report_summary', self.title.replace(' ', '-'))
+            'report_summary', ''.join(filter(str.isalnum, self.title)))
+        # outputPdf = path.replace(
+        #     'report_summary', self.name.replace(' ', '-')
+        # )
         reportTemplate = os.path.join(
             os.getcwd(), self._tempDirectory, self.hazard + '.pdf'
         )
@@ -1120,7 +1125,7 @@ class Report:
             if hazard == 'earthquake':
                 eqDataDictionary = {}
                 eqDataDictionary['title'] = self.title
-                eqDataDictionary['date'] = 'Hazus Run: {}'.format(
+                eqDataDictionary['date'] = 'Hazus Report Run: {}'.format(
                     datetime.datetime.now().strftime('%m-%d-%Y').lstrip('0')
                 )
                 # get bulk of results
@@ -1645,7 +1650,7 @@ class Report:
             if hazard == 'flood':
                 floodDataDictionary = {}
                 floodDataDictionary['title'] = self.title
-                floodDataDictionary['date'] = 'Hazus Run: {}'.format(
+                floodDataDictionary['date'] = 'Hazus Report Run: {}'.format(
                     datetime.datetime.now().strftime('%m-%d-%Y').lstrip('0')
                 )
                 # get bulk of results
@@ -2034,7 +2039,7 @@ class Report:
                 # get bulk of results
                 hurDataDictionary = {}
                 hurDataDictionary['title'] = self.title
-                hurDataDictionary['date'] = 'Hazus Run: {}'.format(
+                hurDataDictionary['date'] = 'Hazus Report Run: {}'.format(
                     datetime.datetime.now().strftime('%m-%d-%Y').lstrip('0')
                 )
                 try:
@@ -2314,6 +2319,48 @@ class Report:
                     title = 'Historic Wind Speeds (mph)'
                     # limit the extent
                     gdf = gdf[gdf['PARAMVALUE'] > 0.1]
+                  # Natural Breaks
+                   # breaks = nb(gdf['PARAMVALUE'], nb_class=6)
+                  # Equal Interval
+                    breaks = self.equal_interval(
+                        gdf['PARAMVALUE'].to_list(), 6)
+                    legend_item1 = breaks[0]
+                    legend_item2 = breaks[1]
+                    legend_item3 = breaks[2]
+                    legend_item4 = breaks[3]
+                    legend_item5 = breaks[4]
+                    legend_item6 = breaks[5]
+                    legend_item7 = breaks[6]
+                    hurDataDictionary['peak_gust_legend_1'] = (
+                        self.abbreviate(legend_item1)
+                        + '-'
+                        + self.abbreviate(legend_item2)
+                    )
+                    hurDataDictionary['peak_gust_legend_2'] = (
+                        self.abbreviate(legend_item2)
+                        + '-'
+                        + self.abbreviate(legend_item3)
+                    )
+                    hurDataDictionary['peak_gust_legend_3'] = (
+                        self.abbreviate(legend_item3)
+                        + '-'
+                        + self.abbreviate(legend_item4)
+                    )
+                    hurDataDictionary['peak_gust_legend_4'] = (
+                        self.abbreviate(legend_item4)
+                        + '-'
+                        + self.abbreviate(legend_item5)
+                    )
+                    hurDataDictionary['peak_gust_legend_5'] = (
+                        self.abbreviate(legend_item5)
+                        + '-'
+                        + self.abbreviate(legend_item6)
+                    )
+                    hurDataDictionary['peak_gust_legend_6'] = (
+                        self.abbreviate(legend_item6)
+                        + '-'
+                        + self.abbreviate(legend_item7)
+                    )
                     map_colors = [
                         '#00faf4',
                         '#ffffcc',
@@ -2326,9 +2373,20 @@ class Report:
                         'color_list', [
                             Color(color).rgb for color in map_colors]
                     )
-                    scheme = 'userdefined'
-                    bins = [50, 94, 142, 166, 200, 500]
-                    classification_kwds = {'bins': bins}
+                    # scheme = 'userdefined'
+                    # bins = [50, 94, 142, 166, 200, 500]
+                    # classification_kwds = {'bins': bins}
+                    # self.addMap(
+                    #     gdf,
+                    #     title=title,
+                    #     column='right',
+                    #     field='PARAMVALUE',
+                    #     formatTicks=False,
+                    #     cmap=color_ramp,
+                    #     scheme=scheme,
+                    #     classification_kwds=classification_kwds,
+                    #     norm=Normalize(0, len(bins)),
+                    # )
                     self.addMap(
                         gdf,
                         title=title,
@@ -2336,9 +2394,6 @@ class Report:
                         field='PARAMVALUE',
                         formatTicks=False,
                         cmap=color_ramp,
-                        scheme=scheme,
-                        classification_kwds=classification_kwds,
-                        norm=Normalize(0, len(bins)),
                     )
                 except:
                     print("Unexpected error:", sys.exc_info()[0])
@@ -2427,7 +2482,7 @@ class Report:
             if hazard == 'tsunami':
                 tsDataDictionary = {}
                 tsDataDictionary['title'] = self.title
-                tsDataDictionary['date'] = 'Hazus Run: {}'.format(
+                tsDataDictionary['date'] = 'Hazus Report Run: {}'.format(
                     datetime.datetime.now().strftime('%m-%d-%Y').lstrip('0')
                 )
                 # get bulk of results
@@ -2548,25 +2603,30 @@ class Report:
                         axis=1,
                         inplace=True,
                     )
+                    # TODO: ReOrder to "Good; Fair; Poor"
                     injuriesAndFatatilies['Injuries Day'] = (
-                        results['Injuries_DayFair']
-                        + results['Injuries_DayGood']
-                        + results['Injuries_DayPoor']
+                       # results['Injuries_DayFair']
+                        #+ 
+                        results['Injuries_DayGood']
+                        #+ results['Injuries_DayPoor']
                     )
                     injuriesAndFatatilies['InjuriesNight'] = (
-                        results['Injuries_NightFair']
-                        + results['Injuries_NightGood']
-                        + results['Injuries_NightPoor']
+                       # results['Injuries_NightFair']
+                    #+
+                         results['Injuries_NightGood']
+                       # + results['Injuries_NightPoor']
                     )
                     injuriesAndFatatilies['Fatalities Day'] = (
-                        results['Fatalities_DayPoor']
-                        + results['Fatalities_DayGood']
-                        + results['Fatalities_DayFair']
+                      #  results['Fatalities_DayPoor']
+                     #   +
+                         results['Fatalities_DayGood']
+                     #   + results['Fatalities_DayFair']
                     )
                     injuriesAndFatatilies['Fatalities Night'] = (
-                        results['Fatalities_NightPoor']
-                        + results['Fatalities_NightGood']
-                        + results['Fatalities_NightFair']
+                     #   results['Fatalities_NightPoor']
+                        #+ 
+                        results['Fatalities_NightGood']
+                     #   + results['Fatalities_NightFair']
                     )
                     injuriesAndFatatilies.drop(
                         [
@@ -2789,7 +2849,7 @@ class Report:
                             Color(color).rgb for color in map_colors]
                     )
 
-                    breaks = nb(travelTimeToSafety['travelTimeOver65yo'], nb_class=7)
+                    breaks = nb(travelTimeToSafety['travelTimeOver65yo'], nb_class=8)
                     # breaks = self.equal_interval(
                     #     travelTimeToSafety['travelTimeOver65yo'].to_list(), 7)
                     tt_legend0 = breaks[0]
@@ -2800,44 +2860,46 @@ class Report:
                     tt_legend5 = breaks[5]
                     tt_legend6 = breaks[6]
                     tt_legend7 = breaks[7]
+                    tt_legend8 = breaks[8]
                     tsDataDictionary['tt_legend0'] = (
                         self.abbreviate(tt_legend0)
                         + '-'
-                        + self.abbreviate(tt_legend1 - 1)
+                        + self.abbreviate(tt_legend1)
                     )
                     tsDataDictionary['tt_legend1'] = (
                         self.abbreviate(tt_legend1)
                         + '-'
-                        + self.abbreviate(tt_legend2 - 1)
+                        + self.abbreviate(tt_legend2)
                     )
                     tsDataDictionary['tt_legend2'] = (
                         self.abbreviate(tt_legend2)
                         + '-'
-                        + self.abbreviate(tt_legend3 - 1)
+                        + self.abbreviate(tt_legend3)
                     )
                     tsDataDictionary['tt_legend3'] = (
                         self.abbreviate(tt_legend3)
                         + '-'
-                        + self.abbreviate(tt_legend4 - 1)
+                        + self.abbreviate(tt_legend4)
                     )
                     tsDataDictionary['tt_legend4'] = (
                         self.abbreviate(tt_legend4)
                         + '-'
-                        + self.abbreviate(tt_legend5 - 1)
+                        + self.abbreviate(tt_legend5)
                     )
                     tsDataDictionary['tt_legend5'] = (
                         self.abbreviate(tt_legend5)
                         + '-'
-                        + self.abbreviate(tt_legend6 - 1)
+                        + self.abbreviate(tt_legend6)
                     )
                     tsDataDictionary['tt_legend6'] = (
                         self.abbreviate(tt_legend6)
                         + '-'
-                        + self.abbreviate(tt_legend7 - 1)
+                        + self.abbreviate(tt_legend7)
                     )
                     tsDataDictionary['tt_legend7'] = (
                         self.abbreviate(tt_legend7)
-                        + '+'
+                        + '-'
+                        + self.abbreviate(tt_legend8)
                     )
 
                     #classification_kwds = {'bins': bins}
@@ -2871,3 +2933,8 @@ class Report:
         unit = (_max - _min) / classes
         res = [_min + k * unit for k in range(classes + 1)]
         return res
+
+    def set_empty_rows(self, gdf):
+        pass    
+        gdf = gdf.replace(r'^\s*$', '-', regex=True)
+        return gdf
