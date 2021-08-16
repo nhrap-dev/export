@@ -141,6 +141,7 @@ class Report:
                 dollars = '.'.join([dollarsSplit[0], dollarsSplit[1][0:1]])
         return dollars
 
+# TODO: Disable this, if not using HTML reports - BC
     def updateTemplate(self):
         self.template = (
             """
@@ -924,30 +925,31 @@ class Report:
                     print("Unexpected error:", sys.exc_info()[0])
 
             # open output file for writing (truncated binary)
-            self.updateTemplate()
-            result_file = open(path, "w+b")
+            # TODO: Disable updateTemplate, if not using HTML reports - BC
+            #self.updateTemplate()
+            #result_file = open(path, "w+b")
 
             # convert HTML to PDF
-            pisa_status = pisa.CreatePDF(self.template, dest=result_file)
+            #pisa_status = pisa.CreatePDF(self.template, dest=result_file)
 
             # close output file
-            result_file.close()
+            #result_file.close()
 
             if openFile:
                 os.startfile(path)
             if deleteTemp:
                 shutil.rmtree(os.getcwd() + '/' + self._tempDirectory)
-            self.columnLeft = ''
-            self.columnRight = ''
+            # self.columnLeft = ''
+            # self.columnRight = ''
 
             # return False on success and True on errors
-            return pisa_status.err
+            # return pisa_status.err
         except:
             print("Unexpected error:", sys.exc_info()[0])
 
-            if premade != None:
-                self.columnLeft = ''
-                self.columnRight = ''
+            # if premade != None:
+            #     self.columnLeft = ''
+            #     self.columnRight = ''
             if deleteTemp:
                 shutil.rmtree(os.getcwd() + '/' + self._tempDirectory)
             raise
@@ -989,15 +991,24 @@ class Report:
             columns (list): [description]
         """
         for name, value in columns.items():
+            # Set empty rows to default value
+            if len(df) < 7:
+                default_value = ["-"] * len(df.columns)
+                for i in range(len(df), 7, 1):
+                    df.loc[i] = default_value
             for row in df.reset_index(drop=True).head(7).itertuples():
                 if isinstance(value, str):
                     dictItem = name + str(row.Index + 1)
                     dictionary[dictItem] = getattr(row, value)
                 else:
                     dictItem = name + str(row.Index + 1)
-                    dictionary[dictItem] = (
-                        getattr(row, value[0]) + '/' + getattr(row, value[1])
-                    )
+                    # Omit empty rows
+                    if getattr(row, value[0]) != "-":
+                        dictionary[dictItem] = (
+                            getattr(row, value[0]) + '/' + getattr(row, value[1])
+                        )
+                    else:
+                        dictionary[dictItem] =  getattr(row, value[0])
 
     def set_needed_appearances(self, writer):
         """Set the needed appearances for the fillable PDF to show values in fillable form fields
@@ -1065,20 +1076,14 @@ class Report:
 
         return writer
 
-    def write_fillable_pdf(self, data_dict, path):
+    def write_fillable_pdf(self, data_dict, path, openFile=True):
         """Insert data into fillable PDF
 
         Args:
             data_dict (dict): [description]
             path (str): [description]
         """
-        #title = self.title.replace(' ', '-')
-        #outputPdf = ''.join(filter(str.isalnum, self.title))
-        outputPdf = path.replace(
-            'report_summary', ''.join(filter(str.isalnum, self.title)))
-        # outputPdf = path.replace(
-        #     'report_summary', self.name.replace(' ', '-')
-        # )
+        outputPdf = path
         reportTemplate = os.path.join(
             os.getcwd(), self._tempDirectory, self.hazard + '.pdf'
         )
@@ -1103,6 +1108,9 @@ class Report:
             pdfFileWriter.addMetadata(metadata)
             with open(outputPdf, 'wb') as outputStream:
                 pdfFileWriter.write(outputStream)
+            # Open PDF File
+            if openFile:
+                os.startfile(path)
 
     def buildPremade(self, path):
         """Builds a premade report"""
@@ -2933,8 +2941,3 @@ class Report:
         unit = (_max - _min) / classes
         res = [_min + k * unit for k in range(classes + 1)]
         return res
-
-    def set_empty_rows(self, gdf):
-        pass    
-        gdf = gdf.replace(r'^\s*$', '-', regex=True)
-        return gdf
