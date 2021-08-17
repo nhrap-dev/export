@@ -2711,6 +2711,7 @@ class Report:
                     total = totalDay + '/' + totalNight
                     tsDataDictionary['total_day'] = totalDay
                     tsDataDictionary['total_night'] = totalNight
+                    # TODO: Remove this - BC
                     #tsDataDictionary['total_injuries'] = total
                     self.addTable(
                         injuriesAndFatatilies, 'Injuries and Fatatilies', total, 'left'
@@ -2726,9 +2727,14 @@ class Report:
                 try:
                     economicLoss = results[['block', 'EconLoss', 'geometry']]
                     # convert to GeoDataFrame
-                    breaks = self.equal_interval(
-                        results['EconLoss'].to_list(), 4)
-                    # breaks = nb(results['EconLoss'], nb_class=4)
+                    economicLoss = economicLoss[economicLoss['EconLoss'] > 1]
+
+                    # TODO: Review breaks style - BC
+                    # breaks = self.equal_interval(
+                    #     economicLoss['EconLoss'].to_list(), 4)
+
+                    breaks = nb(economicLoss['EconLoss'].to_list(), nb_class=4)
+
                     legend_item1 = breaks[0]
                     legend_item2 = breaks[1]
                     legend_item3 = breaks[2]
@@ -2737,25 +2743,25 @@ class Report:
                     tsDataDictionary['legend_1'] = (
                         '$'
                         + self.abbreviate(legend_item1)
-                        + '-'
+                        + ' - '
                         + self.abbreviate(legend_item2)
                     )
                     tsDataDictionary['legend_2'] = (
                         '$'
                         + self.abbreviate(legend_item2)
-                        + '-'
+                        + ' - '
                         + self.abbreviate(legend_item3)
                     )
                     tsDataDictionary['legend_3'] = (
                         '$'
                         + self.abbreviate(legend_item3)
-                        + '-'
+                        + ' - '
                         + self.abbreviate(legend_item4)
                     )
                     tsDataDictionary['legend_4'] = (
                         '$'
                         + self.abbreviate(legend_item4)
-                        + '-'
+                        + ' - '
                         + self.abbreviate(legend_item5)
                     )
                     economicLoss.geometry = economicLoss.geometry.apply(loads)
@@ -2801,22 +2807,22 @@ class Report:
                     legend_item5 = breaks[4]
                     tsDataDictionary['wd_legend_1'] = (
                         self.abbreviate(legend_item1)
-                        + '-'
+                        + ' - '
                         + self.abbreviate(legend_item2)
                     )
                     tsDataDictionary['wd_legend_2'] = (
                         self.abbreviate(legend_item2)
-                        + '-'
+                        + ' - '
                         + self.abbreviate(legend_item3)
                     )
                     tsDataDictionary['wd_legend_3'] = (
                         self.abbreviate(legend_item3)
-                        + '-'
+                        + ' - '
                         + self.abbreviate(legend_item4)
                     )
                     tsDataDictionary['wd_legend_4'] = (
                         self.abbreviate(legend_item4)
-                        + '-'
+                        + ' - '
                         + self.abbreviate(legend_item5)
                     )
                     self.addMap(
@@ -2871,42 +2877,42 @@ class Report:
                     tt_legend8 = breaks[8]
                     tsDataDictionary['tt_legend0'] = (
                         self.abbreviate(tt_legend0)
-                        + '-'
+                        + ' - '
                         + self.abbreviate(tt_legend1)
                     )
                     tsDataDictionary['tt_legend1'] = (
                         self.abbreviate(tt_legend1)
-                        + '-'
+                        + ' - '
                         + self.abbreviate(tt_legend2)
                     )
                     tsDataDictionary['tt_legend2'] = (
                         self.abbreviate(tt_legend2)
-                        + '-'
+                        + ' - '
                         + self.abbreviate(tt_legend3)
                     )
                     tsDataDictionary['tt_legend3'] = (
                         self.abbreviate(tt_legend3)
-                        + '-'
+                        + ' - '
                         + self.abbreviate(tt_legend4)
                     )
                     tsDataDictionary['tt_legend4'] = (
                         self.abbreviate(tt_legend4)
-                        + '-'
+                        + ' - '
                         + self.abbreviate(tt_legend5)
                     )
                     tsDataDictionary['tt_legend5'] = (
                         self.abbreviate(tt_legend5)
-                        + '-'
+                        + ' - '
                         + self.abbreviate(tt_legend6)
                     )
                     tsDataDictionary['tt_legend6'] = (
                         self.abbreviate(tt_legend6)
-                        + '-'
+                        + ' - '
                         + self.abbreviate(tt_legend7)
                     )
                     tsDataDictionary['tt_legend7'] = (
                         self.abbreviate(tt_legend7)
-                        + '-'
+                        + ' - '
                         + self.abbreviate(tt_legend8)
                     )
 
