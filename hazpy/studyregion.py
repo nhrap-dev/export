@@ -47,13 +47,15 @@ class StudyRegion:
         if hazard == None and len(hazards) == 1:
             self.hazard = hazards[0]
         elif hazard == None and len(hazards) > 1:
+            # Defaults to first hazard (earthquake) - BC
             self.hazard = hazards[0]
-            print(
-                str(hazards)
-                + " hazard options available. Defaulting to "
-                + hazards[0]
-                + '. To change the hazard, use: StudyRegion.setHazard("YOUR_HAZARD_HERE")'
-            )
+            # TODO: Review if this is needed - or refactor to a popup message - BC
+            # print(
+            #     str(hazards)
+            #     + " hazard options available. Defaulting to "
+            #     + hazards[0]
+            #     + '. To change the hazard, use: StudyRegion.setHazard("YOUR_HAZARD_HERE")'
+            # )
         else:
             if hazard in hazards:
                 self.hazard = hazard
@@ -337,48 +339,25 @@ class StudyRegion:
                         GROUP BY GenBldgOrGenOcc""".format(
                     s=self.name, sc=self.scenario, rp=self.returnPeriod
                 ),
-                # "tsunami": """SELECT LEFT({s}.dbo.tsHazNsiGbs.NsiID, 3) As Occupancy,
-                #         COUNT({s}.dbo.tsHazNsiGbs.NsiID) As Total,
-                #         COUNT(CASE WHEN {s}.dbo.tsHazNsiGbs.ValStruct > 0 AND {s}.dbo.tsHazNsiGbs.ValCont > 0 AND
-                #         (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct+{s}.dbo.tsHazNsiGbs.ValCont))
-                #         <= 0.05 THEN 1 ELSE NULL END) As Affected,
-                #         COUNT(CASE WHEN {s}.dbo.tsHazNsiGbs.ValStruct > 0 AND {s}.dbo.tsHazNsiGbs.ValCont > 0 AND
-                #         (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct+{s}.dbo.tsHazNsiGbs.ValCont))
-                #         > 0.05 AND (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct+{s}.dbo.tsHazNsiGbs.ValCont))
-                #         <= 0.3 THEN 1 ELSE NULL END) As Minor,
-                #         COUNT(CASE WHEN {s}.dbo.tsHazNsiGbs.ValStruct > 0 AND {s}.dbo.tsHazNsiGbs.ValCont > 0 AND
-                #         (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct+{s}.dbo.tsHazNsiGbs.ValCont))
-                #         > 0.3 AND (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct+{s}.dbo.tsHazNsiGbs.ValCont))
-                #         <= 0.5 THEN 1 ELSE NULL END) As Major,
-                #         COUNT(CASE WHEN {s}.dbo.tsHazNsiGbs.ValStruct > 0 AND {s}.dbo.tsHazNsiGbs.ValCont > 0 AND
-                #         (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct+{s}.dbo.tsHazNsiGbs.ValCont))
-                #         > 0.5 THEN 1 ELSE NULL END) As Destroyed
-                #         FROM {s}.dbo.tsHazNsiGbs FULL JOIN {s}.dbo.tsNsiGbs
-                #         ON {s}.dbo.tsHazNsiGbs.NsiID = {s}.dbo.tsNsiGbs.NsiID
-                #         FULL JOIN [{s}].[dbo].[tsFRNsiGbs] ON {s}.dbo.tsNsiGbs.NsiID =
-                #         [{s}].[dbo].[tsFRNsiGbs].NsiID WHERE {s}.dbo.tsHazNsiGbs.NsiID IS NOT NULL
-                #         GROUP BY LEFT({s}.dbo.tsHazNsiGbs.NsiID, 3)""".format(
-                #     s=self.name
-                # ),
                 "tsunami": """SELECT 
                         CASE 
                             WHEN CHARINDEX('_', tsHazNsiGbs.NsiID) > 0 THEN LEFT(PARSENAME(REPLACE(tsHazNsiGbs.NsiID, '_', '.'), 2), 3)
                             ELSE LEFT(tsHazNsiGbs.NsiID, 3)
                         END As Occupancy,
                         COUNT({s}.dbo.tsHazNsiGbs.NsiID) As Total,
-                        COUNT(CASE WHEN {s}.dbo.tsHazNsiGbs.ValStruct > 0 AND {s}.dbo.tsHazNsiGbs.ValCont > 0 AND
-                        (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct+{s}.dbo.tsHazNsiGbs.ValCont))
+                        COUNT(CASE WHEN {s}.dbo.tsHazNsiGbs.ValStruct > 0 AND
+                        (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct))
                         <= 0.05 THEN 1 ELSE NULL END) As Affected,
-                        COUNT(CASE WHEN {s}.dbo.tsHazNsiGbs.ValStruct > 0 AND {s}.dbo.tsHazNsiGbs.ValCont > 0 AND
-                        (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct+{s}.dbo.tsHazNsiGbs.ValCont))
-                        > 0.05 AND (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct+{s}.dbo.tsHazNsiGbs.ValCont))
+                        COUNT(CASE WHEN {s}.dbo.tsHazNsiGbs.ValStruct > 0 AND
+                        (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct))
+                        > 0.05 AND (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct))
                         <= 0.3 THEN 1 ELSE NULL END) As Minor,
-                        COUNT(CASE WHEN {s}.dbo.tsHazNsiGbs.ValStruct > 0 AND {s}.dbo.tsHazNsiGbs.ValCont > 0 AND
+                        COUNT(CASE WHEN {s}.dbo.tsHazNsiGbs.ValStruct > 0 AND
                         (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct+{s}.dbo.tsHazNsiGbs.ValCont))
-                        > 0.3 AND (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct+{s}.dbo.tsHazNsiGbs.ValCont))
+                        > 0.3 AND (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct))
                         <= 0.5 THEN 1 ELSE NULL END) As Major,
-                        COUNT(CASE WHEN {s}.dbo.tsHazNsiGbs.ValStruct > 0 AND {s}.dbo.tsHazNsiGbs.ValCont > 0 AND
-                        (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct+{s}.dbo.tsHazNsiGbs.ValCont))
+                        COUNT(CASE WHEN {s}.dbo.tsHazNsiGbs.ValStruct > 0  AND
+                        (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct))
                         > 0.5 THEN 1 ELSE NULL END) As Destroyed
                         FROM {s}.dbo.tsHazNsiGbs FULL JOIN {s}.dbo.tsNsiGbs
                         ON {s}.dbo.tsHazNsiGbs.NsiID = {s}.dbo.tsNsiGbs.NsiID
@@ -438,19 +417,19 @@ class StudyRegion:
                 ),
                 "tsunami": """SELECT eqBldgType AS BldgType, [Description],
                         COUNT({s}.dbo.tsHazNsiGbs.NsiID) As Structures,
-                        COUNT(CASE WHEN {s}.dbo.tsHazNsiGbs.ValStruct > 0 AND {s}.dbo.tsHazNsiGbs.ValCont > 0 AND
-                        (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct+{s}.dbo.tsHazNsiGbs.ValCont))
+                        COUNT(CASE WHEN {s}.dbo.tsHazNsiGbs.ValStruct > 0 AND
+                        (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct))
                         <= 0.05 THEN 1 ELSE NULL END) As Affected,
-                        COUNT(CASE WHEN {s}.dbo.tsHazNsiGbs.ValStruct > 0 AND {s}.dbo.tsHazNsiGbs.ValCont > 0 AND
-                        (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct+{s}.dbo.tsHazNsiGbs.ValCont))
-                        > 0.05 AND (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct+{s}.dbo.tsHazNsiGbs.ValCont))
+                        COUNT(CASE WHEN {s}.dbo.tsHazNsiGbs.ValStruct > 0 AND
+                        (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct))
+                        > 0.05 AND (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct))
                         <= 0.3 THEN 1 ELSE NULL END) As Minor,
-                        COUNT(CASE WHEN {s}.dbo.tsHazNsiGbs.ValStruct > 0 AND {s}.dbo.tsHazNsiGbs.ValCont > 0 AND
-                        (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct+{s}.dbo.tsHazNsiGbs.ValCont))
-                        > 0.3 AND (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct+{s}.dbo.tsHazNsiGbs.ValCont))
+                        COUNT(CASE WHEN {s}.dbo.tsHazNsiGbs.ValStruct > 0 AND
+                        (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct))
+                        > 0.3 AND (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct))
                         <= 0.5 THEN 1 ELSE NULL END) As Major,
-                        COUNT(CASE WHEN {s}.dbo.tsHazNsiGbs.ValStruct > 0 AND {s}.dbo.tsHazNsiGbs.ValCont > 0 AND
-                        (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct+{s}.dbo.tsHazNsiGbs.ValCont))
+                        COUNT(CASE WHEN {s}.dbo.tsHazNsiGbs.ValStruct > 0 AND
+                        (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct))
                         > 0.5 THEN 1 ELSE NULL END) As Destroyed
                         FROM {s}.dbo.tsHazNsiGbs FULL JOIN {s}.dbo.eqclBldgType
                         ON {s}.dbo.tsHazNsiGbs.EqBldgTypeID = {s}.dbo.eqclBldgType.DisplayOrder
