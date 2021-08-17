@@ -405,13 +405,17 @@ class StudyRegion:
                         GROUP BY BldgType""".format(
                     s=self.name, c=constant, sc=self.scenario, rp=self.returnPeriod
                 ),
-                "hurricane": """SELECT GenBldgOrGenOcc AS Occupancy,
-                        SUM(ISNULL(NonDamage, 0)) As NoDamage, SUM(ISNULL(MinDamage, 0)) AS Affected,
-                        SUM(ISNULL(ModDamage, 0)) AS Minor, SUM(ISNULL(SevDamage, 0)) AS Major,
-                        SUM(ISNULL(ComDamage, 0)) AS Destroyed FROM {s}.dbo.[huSummaryDamage]
-                        WHERE GenBldgOrGenOcc IN('CONCRETE', 'MASONRY', 'STEEL', 'WOOD', 'MH')
-                        and ReturnPeriod = '{rp}' 
-                        and huScenarioName = '{sc}'
+                "hurricane": """SELECT 
+                            GenBldgOrGenOcc AS [Building Type],
+                            SUM(ISNULL(NonDamage, 0)) As NoDamage, 
+                            SUM(ISNULL(MinDamage, 0)) AS Affected,
+                            SUM(ISNULL(ModDamage, 0)) AS Minor, 
+                            SUM(ISNULL(SevDamage, 0)) AS Major,
+                            SUM(ISNULL(ComDamage, 0)) AS Destroyed 
+                        FROM {s}.dbo.[huSummaryDamage]
+                        WHERE GenBldgOrGenOcc IN ('CONCRETE', 'MASONRY', 'STEEL', 'WOOD', 'MH')
+                        AND ReturnPeriod = '{rp}' 
+                        AND huScenarioName = '{sc}'
                         GROUP BY GenBldgOrGenOcc""".format(
                     s=self.name, sc=self.scenario, rp=self.returnPeriod
                 ),
