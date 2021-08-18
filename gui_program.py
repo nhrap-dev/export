@@ -5,8 +5,8 @@ import sys
 import tkinter as tk
 #from time import sleep, time
 from time import time
-# from tkinter import (BOTTOM, LEFT, RIGHT, TOP, Canvas, E, Label, N, OptionMenu,
-#                      PhotoImage, S, StringVar, W, filedialog, messagebox, ttk)
+from tkinter import (BOTTOM, LEFT, RIGHT, TOP, Canvas, E, Label, N, OptionMenu,
+                     PhotoImage, S, StringVar, W, filedialog, messagebox, ttk)
 
 #from tkinter import StringVar, W, filedialog, ttk, messagebox
 from tkinter import StringVar, W, filedialog, ttk
@@ -295,7 +295,8 @@ class App():
             self.removeWidget_progress()
 
 
-        except:
+        except Exception as e:
+            print(e)
             # if the export fails
             if 'bar_progress' in dir(self):
                 self.removeWidget_progress()
@@ -335,6 +336,7 @@ class App():
                 value = self.dropdown_hazard.get()
                 if len(value) > 0:
                     self.studyRegion.setHazard(value)
+                    self.studyRegion.report.hazard = value
                 else:
                     self.selection_errors.append('Hazard')
                     validated = False
@@ -376,11 +378,12 @@ class App():
                     validated = True
 
             return validated
-        except:
+        except Exception as e:
+            print(e)
             # validation check fails
             validated = False
             ctypes.windll.user32.MessageBoxW(
-                None, u"Unexpected export error: " + str(sys.exc_info()[0]), u'HazPy - Message', 0)
+                None, u"Unexpected export validation error: " + str(sys.exc_info()[0]), u'HazPy - Message', 0)
 
 
     def addWidget_report(self, row):
