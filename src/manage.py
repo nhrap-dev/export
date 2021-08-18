@@ -3,9 +3,9 @@ import json
 import os
 import socket
 import sys
-from subprocess import Popen, call, check_call, check_output, run
+from subprocess import call, check_call, run
 
-import pkg_resources
+#import pkg_resources
 import requests
 
 
@@ -89,7 +89,7 @@ class Manage:
         print('Checking for the conda environment {ve}'.format(ve=self.virtual_environment))
         try:
             try:
-                check_call('{ca} {vw}'.format(ca=self.conda_activate, ve=self.virtual_environment), shell=True)
+                check_call('{ca} {ve}'.format(ca=self.conda_activate, ve=self.virtual_environment), shell=True)
             except:
                 try:
                     print('Creating the conda virtual environment {ve}'.format(ve=self.virtual_environment))

@@ -12,7 +12,7 @@ import seaborn as sns
 import warnings
 from colour import Color
 from jenkspy import jenks_breaks as nb
-import math
+#import math
 from matplotlib import pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap, Normalize
 from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
@@ -20,7 +20,7 @@ from PyPDF2 import PdfFileReader, PdfFileWriter
 from PyPDF2.generic import BooleanObject, IndirectObject, NameObject, TextStringObject, DictionaryObject, NumberObject
 from shapely.wkt import loads
 from uuid import uuid4 as uuid
-from xhtml2pdf import pisa
+#from xhtml2pdf import pisa
 import contextily as cx
 
 # Disable pandas warnings
@@ -492,39 +492,39 @@ class Report:
         if column == 'right':
             self.columnRight = self.columnRight + template
 
-    def addImage(self, src, title, column):
-        """Adds image block to the report
+    # def addImage(self, src, title, column):
+    #     """Adds image block to the report
 
-        Keyword Arguments: \n
-            src: str -- the path and filename of the image
-            title: str -- the title of the image
-            column: str -- which column in the report to add to (options: 'left', 'right')
-        """
-        template = (
-            """
-            <div class="result_container">
-                <table class="results_table">
-                <tr class="results_table_header">
-                    <th class="results_table_header_title_solo">
-                    """
-            + title
-            + """
-                    </th>
-                </tr>
-                </table>
-                <img
-                class="results_table_img"
-                src='"""
-            + src
-            + """'
-                alt='"""
-            + title
-            + """'
-                />
-            </div>
-            <div class="result_container_spacer">_</div>
-            """
-        )
+    #     Keyword Arguments: \n
+    #         src: str -- the path and filename of the image
+    #         title: str -- the title of the image
+    #         column: str -- which column in the report to add to (options: 'left', 'right')
+    #     """
+    #     template = (
+    #         """
+    #         <div class="result_container">
+    #             <table class="results_table">
+    #             <tr class="results_table_header">
+    #                 <th class="results_table_header_title_solo">
+    #                 """
+    #         + title
+    #         + """
+    #                 </th>
+    #             </tr>
+    #             </table>
+    #             <img
+    #             class="results_table_img"
+    #             src='"""
+    #         + src
+    #         + """'
+    #             alt='"""
+    #         + title
+    #         + """'
+    #             />
+    #         </div>
+    #         <div class="result_container_spacer">_</div>
+    #         """
+    #     )
 
     def addMap(
         self,
@@ -651,8 +651,8 @@ class Report:
                 annotationDf['centroid'] = [
                     x.centroid for x in annotationDf['geometry']
                 ]
-
-                maxSize = annotationDf['size'].max()
+                # TODO: Remove mazSize? - BC
+                #maxSize = annotationDf['size'].max()
                 topFontSize = 2.5
                 annotationDf['fontSize'] = topFontSize * (
                     annotationDf['size'] / annotationDf['size'].max()
@@ -826,6 +826,7 @@ class Report:
             plt.legend(title='', fontsize=8)
             plt.xticks(fontsize=8)
             plt.yticks(fontsize=8)
+            # TODO: Review fmt (formatting) - BC
             fmt = '{x:,.0f}'
             #tick = ticker.StrMethodFormatter(fmt)
             tick = ticker.FuncFormatter(self.format_tick)

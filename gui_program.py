@@ -8,7 +8,8 @@ from time import time
 # from tkinter import (BOTTOM, LEFT, RIGHT, TOP, Canvas, E, Label, N, OptionMenu,
 #                      PhotoImage, S, StringVar, W, filedialog, messagebox, ttk)
 
-from tkinter import StringVar, W, filedialog, ttk, messagebox
+#from tkinter import StringVar, W, filedialog, ttk, messagebox
+from tkinter import StringVar, W, filedialog, ttk
 from tkinter.ttk import Progressbar
 
 from hazpy.hazusdb import HazusDB
@@ -201,8 +202,8 @@ class App():
                         progressValue = progressValue + progressIncrement
                         self.updateProgressBar(progressValue, 'Writing damaged facilities to CSV')
                         essentialFacilities.toCSV(outputPath + '/damaged_facilities.csv')
-                    except:
-                        print('Damaged facilities not available to export.')
+                    except Exception as e:
+                        print(e)
                 except:
                     ctypes.windll.user32.MessageBoxW(
                         None, u"Unexpected error exporting CSVs: " + str(sys.exc_info()[0]), u'HazPy - Message', 0)
@@ -222,8 +223,8 @@ class App():
                         self.updateProgressBar(progressValue, 'Writing damaged facilities to Shapefile')
                         essentialFacilities.toShapefile(
                             outputPath + '/damaged_facilities.shp')
-                    except:
-                        print('Damaged facilities not available to export.')
+                    except Exception as e:
+                        print(e)
                     try:
                         progressValue = progressValue + progressIncrement
                         self.updateProgressBar(progressValue, 'Writing hazard to Shapefile')
@@ -253,8 +254,8 @@ class App():
                         self.updateProgressBar(progressValue, 'Writing damaged facilities to GeoJSON')
                         essentialFacilities.toGeoJSON(
                             outputPath + '/damaged_facilities.geojson')
-                    except:
-                        print('Damaged facilities not available to export.')
+                    except Exception as e:
+                        print(e)
                     try:
                         progressValue = progressValue + progressIncrement
                         self.updateProgressBar(progressValue, 'Writing hazard to GeoJSON')
@@ -715,7 +716,8 @@ class App():
             self.row += 1
             # (extra) draft email
             if self.config['extras']['draftEmail']:
-                self.opt_draftEmail = tk.IntVar(value=1)
+                # Draft email is currently disabled by default
+                self.opt_draftEmail = tk.IntVar(value=0)
                 ttk.Checkbutton(self.root, text="Draft Email", variable=self.opt_draftEmail, style='BW.TCheckbutton', command=self.handle_draftEmailCheckbox).grid(
                     row=self.row, column=1, padx=(xpadl, 0), pady=0, sticky=W)
                 self.row += 1

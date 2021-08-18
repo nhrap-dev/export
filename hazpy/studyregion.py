@@ -3,16 +3,16 @@ import pandas as pd
 import geopandas as gpd
 import pyodbc as py
 from shapely.wkt import loads
-from shapely.geometry.multipolygon import MultiPolygon
-from shapely.geometry.polygon import Polygon
-import urllib
+#from shapely.geometry.multipolygon import MultiPolygon
+#from shapely.geometry.polygon import Polygon
+#import urllib
 
 # TODO check if all geojsons are oriented correctly; if not, apply orient
 # try:
 #     from shapely.ops import orient  # version >=1.7a2
 # except:
 #     from shapely.geometry.polygon import orient
-from sqlalchemy import create_engine
+#from sqlalchemy import create_engine
 import sys
 from functools import reduce
 
@@ -141,7 +141,7 @@ class StudyRegion:
                 for driver in drivers:
                     try:
                         conn = py.connect(
-                            "Driver={d};SERVER={cn}\HAZUSPLUSSRVR; UID=SA;PWD=Gohazusplus_02".format(
+                            r"Driver={d};SERVER={cn}\HAZUSPLUSSRVR; UID=SA;PWD=Gohazusplus_02".format(
                                 d=driver, cn=computer_name
                             )
                         )
@@ -419,11 +419,13 @@ class StudyRegion:
                         GROUP BY GenBldgOrGenOcc""".format(
                     s=self.name, sc=self.scenario, rp=self.returnPeriod
                 ),
-                "tsunami": """SELECT eqBldgType AS BldgType, [Description],
-                        COUNT({s}.dbo.tsHazNsiGbs.NsiID) As Structures,
-                        COUNT(CASE WHEN {s}.dbo.tsHazNsiGbs.ValStruct > 0 AND
-                        (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct))
-                        <= 0.05 THEN 1 ELSE NULL END) As Affected,
+                "tsunami": """SELECT
+                            eqBldgType AS BldgType,
+                            [Description],
+                            COUNT({s}.dbo.tsHazNsiGbs.NsiID) As Structures,
+                            COUNT(CASE WHEN {s}.dbo.tsHazNsiGbs.ValStruct > 0 AND
+                            (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct))
+                            <= 0.05 THEN 1 ELSE NULL END) As Affected,
                         COUNT(CASE WHEN {s}.dbo.tsHazNsiGbs.ValStruct > 0 AND
                         (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct))
                         > 0.05 AND (BldgLoss/({s}.dbo.tsHazNsiGbs.ValStruct))
@@ -1246,7 +1248,7 @@ class StudyRegion:
 
                         # get all column names for hz table
                         sql = """SELECT COLUMN_NAME as "fieldName" FROM {s}.INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = N'hz{f}'""".format(
-                            s=self.name, f=facility, p=prefix
+                            s=self.name, f=facility#, p=prefix
                         )
                         df = self.query(sql)
                         hzcolumns = df["fieldName"].tolist()
@@ -1344,7 +1346,7 @@ class StudyRegion:
                                         from [{s}].[dbo].[hz{f}]) hz
                                     on hz.FacilityID = sr.FacilityID
                                 """.format(
-                            i=idColumn,
+                            #i=idColumn,
                             s=self.name,
                             f=facility,
                             p=prefix,
