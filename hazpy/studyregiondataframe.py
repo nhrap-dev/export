@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import geopandas as gpd
 import sys
@@ -134,7 +135,20 @@ class StudyRegionDataFrame(pd.DataFrame):
             self['geometry'] = self['geometry'].apply(lambda x: loads(str(x)))
             crs = {'init' :'epsg:4326'}
             gdf = gpd.GeoDataFrame(self, geometry='geometry', crs=crs)
-            gdf.to_file(path, driver='ESRI Shapefile')
+            # Separate damaged_facilities by geometry type
+            if path.split('/')[-1].replace('.shp', '') == 'damaged_facilities':
+                # Create points shapefile
+                points_gdf = gdf[gdf['geometry'].geom_type == 'Point']
+                if not points_gdf.empty:
+                    points_path = path.replace('.shp', '_points.shp')
+                    points_gdf.to_file(points_path, driver='ESRI Shapefile')
+                # Create lines shapefile
+                lines_gdf = gdf[gdf['geometry'].geom_type == 'LineString']
+                if not lines_gdf.empty:
+                    lines_path = path.replace('.shp', '_lines.shp')
+                    lines_gdf.to_file(lines_path, driver='ESRI Shapefile')
+            else:
+                gdf.to_file(path, driver='ESRI Shapefile')
         except:
             print("Unexpected error:", sys.exc_info()[0])
             raise
