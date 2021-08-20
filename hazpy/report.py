@@ -593,6 +593,8 @@ class Report:
                     column=field,
                     cmap=cmap,
                     ax=ax,
+                    linewidth=0.02,
+                    edgecolor="darkgrey",
                     scheme=scheme,
                     classification_kwds=classification_kwds,
                     norm=norm
@@ -604,6 +606,8 @@ class Report:
                     column=field,
                     cmap=cmap,
                     ax=ax,
+                    linewidth=0.02,
+                    edgecolor="darkgrey",
                     scheme=scheme,
                     classification_kwds=classification_kwds,
                     norm=norm
