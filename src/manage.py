@@ -145,22 +145,25 @@ class Manage:
 
             if status == 200:
                 newestVersion = self.parseVersionFromInit(req.text)
-                if newestVersion != installedVersion:
-                    returnValue = self.messageBox(
-                        None, u"A new version of the tool was found. Would you like to install it now?", u"HazPy", 0x1000 | 0x4)
-                    if returnValue == 6:
-                        print('Updating tool...')
-                        self.updateTool()
-                        # Check if conda is in path
+                # Check if conda is in path
                 if self.isCondaInPath():
-                    # Check if environment exists
                     res = run('{ca} {ve}'.format(ca=self.conda_activate, ve=self.virtual_environment), shell=True, capture_output=True)
-                    # Update environment if it exists (res.returncode == 0)
-                    if res.returncode == 0:
-                        self.update_environment()
                     # Create environmnent if it does not exists (res.returncode == 1)
-                    else:
-                        self.create_conda_environment()
+                    if newestVersion != installedVersion and res.returncode == 1:
+                        returnValue = self.messageBox(
+                            None, u"A newer version of the tool was found. Would you like to install it now?", u"HazPy", 0x1000 | 0x4)
+                        if returnValue == 6:
+                            print('Updating tool...')
+                            self.updateTool()
+                            print('Creating the virtual environment...')
+                            self.create_conda_environment()
+                    # Update the environmnent if it already exists (res.returncode == 0)
+                    if newestVersion != installedVersion and res.returncode == 0:
+                         self.updateTool()
+                         self.update_environment()
+                else:
+                    print('Conda is needed to run this application.')
+                    # TODO: Add function to download miniforge - BC
             else:
                 print('Unable to connect to url: ' + self.tool_version_url)
         except:
