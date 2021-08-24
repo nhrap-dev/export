@@ -1,4 +1,4 @@
-name: export_env
+name: hazus_export_env
 channels:
   - nhrap
   - nsls2forge
