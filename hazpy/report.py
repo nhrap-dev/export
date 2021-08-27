@@ -1122,7 +1122,7 @@ class Report:
         try:
             # assign constants
             tableRowLimit = 7
-            tonsToTruckLoadsCoef = 0.25
+            tonsToTruckLoadsCoef = 25
             hazard = self.hazard
             if not os.path.isdir(os.getcwd() + '\\' + self._tempDirectory):
                 os.mkdir(os.getcwd() + '/' + self._tempDirectory)
@@ -1613,17 +1613,18 @@ class Report:
                 ###################################
                 # add debris
                 try:
+                    # TODO: Round truckloads debris
                     # populate and format values
                     bwTons = self.addCommas(
                         results['DebrisBW'].sum(), abbreviate=True)
                     csTons = self.addCommas(
                         results['DebrisCS'].sum(), abbreviate=True)
                     bwTruckLoads = self.addCommas(
-                        results['DebrisBW'].sum() * tonsToTruckLoadsCoef,
+                        results['DebrisBW'].sum() / tonsToTruckLoadsCoef,
                         abbreviate=True,
                     )
                     csTruckLoads = self.addCommas(
-                        results['DebrisCS'].sum() * tonsToTruckLoadsCoef,
+                        results['DebrisCS'].sum() / tonsToTruckLoadsCoef,
                         abbreviate=True,
                     )
                     # populate totals
@@ -1631,7 +1632,7 @@ class Report:
                         results['DebrisTotal'].sum(), abbreviate=True
                     )
                     totalTruckLoads = self.addCommas(
-                        results['DebrisTotal'].sum() * tonsToTruckLoadsCoef,
+                        results['DebrisTotal'].sum() / tonsToTruckLoadsCoef,
                         abbreviate=True,
                     )
                     total = totalTons + ' Tons/' + totalTruckLoads + ' Truck Loads'
@@ -1993,7 +1994,7 @@ class Report:
                     #     abbreviate=True,
                     # )
                     truckLoads = self.addCommas(
-                        results['DebrisTotal'].sum() * tonsToTruckLoadsCoef,
+                        results['DebrisTotal'].sum() / tonsToTruckLoadsCoef,
                         abbreviate=True,
                     )
                     totalFinish = self.addCommas(
@@ -2001,7 +2002,7 @@ class Report:
                     totalStructure = self.addCommas(
                         results['StructureTonsTotal'].sum(), abbreviate=True)
                     totalFoundation = self.addCommas(
-                        results['FoundationTonsTotal'].sum() * tonsToTruckLoadsCoef,
+                        results['FoundationTonsTotal'].sum() / tonsToTruckLoadsCoef,
                         abbreviate=True,
                     )
                     # populate totals
@@ -2022,7 +2023,7 @@ class Report:
                         'Truck Loads': [totalFoundation, totalFinish, totalStructure],
                     }
                     truckLoads = self.addCommas(
-                        results['DebrisTotal'] * tonsToTruckLoadsCoef,
+                        results['DebrisTotal'] / tonsToTruckLoadsCoef,
                         abbreviate=True,
                     )
                     # create DataFrame from data dictionary
@@ -2428,19 +2429,19 @@ class Report:
                         results['DebrisEligibleTree'].sum(), abbreviate=True
                     )
                     bwTruckLoads = self.addCommas(
-                        results['DebrisBW'].sum() * tonsToTruckLoadsCoef,
+                        results['DebrisBW'].sum() / tonsToTruckLoadsCoef,
                         abbreviate=True,
                     )
                     csTruckLoads = self.addCommas(
-                        results['DebrisCS'].sum() * tonsToTruckLoadsCoef,
+                        results['DebrisCS'].sum() / tonsToTruckLoadsCoef,
                         abbreviate=True,
                     )
                     treeTruckLoads = self.addCommas(
-                        results['DebrisTree'].sum() * tonsToTruckLoadsCoef,
+                        results['DebrisTree'].sum() / tonsToTruckLoadsCoef,
                         abbreviate=True,
                     )
                     eligibleTreeTruckLoads = self.addCommas(
-                        results['DebrisEligibleTree'].sum() *
+                        results['DebrisEligibleTree'].sum() /
                         tonsToTruckLoadsCoef,
                         abbreviate=True,
                     )
@@ -2449,7 +2450,7 @@ class Report:
                         results['DebrisTotal'].sum(), abbreviate=True
                     )
                     totalTruckLoads = self.addCommas(
-                        results['DebrisTotal'].sum() * tonsToTruckLoadsCoef,
+                        results['DebrisTotal'].sum() / tonsToTruckLoadsCoef,
                         abbreviate=True,
                     )
                     total = totalTons + ' Tons/' + totalTruckLoads + ' Truck Loads'
