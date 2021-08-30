@@ -1638,7 +1638,7 @@ class Report:
                     total = totalTons + ' Tons/' + totalTruckLoads + ' Truck Loads'
                     # build data dictionary
                     data = {
-                        'Debris Type': ['Brick, Wood, and Others', 'Concrete & Steel'],
+                        'Debris Type': ['Brick, Wood, and Other', 'Concrete & Steel'],
                         'Tons': [bwTons, csTons],
                         'Truck Loads': [bwTruckLoads, csTruckLoads],
                     }
@@ -2457,7 +2457,7 @@ class Report:
                     # build data dictionary
                     data = {
                         'Debris Type': [
-                            'Brick, Wood, and Others',
+                            'Brick, Wood, and Other',
                             'Concrete & Steel',
                             'Tree',
                             'Eligible Tree',
