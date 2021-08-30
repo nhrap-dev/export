@@ -201,7 +201,10 @@ class StudyRegion:
             # constant to convert to real USD
             constant = 1000
             sqlDict = {
-                "earthquake": """select Tract as tract, SUM(ISNULL(TotalLoss, 0)) * {c} as EconLoss from {s}.dbo.[eqTractEconLoss] group by [eqTractEconLoss].Tract""".format(
+                "earthquake": """select Tract as tract, SUM(ISNULL(TotalLoss, 0)) * {c} as EconLoss 
+                from {s}.dbo.[eqTractEconLoss] group by [eqTractEconLoss].Tract
+                HAVING Sum(ISNULL(TotalLoss, 0)) * {c} > 0
+                """.format(
                     s=self.name, c=constant
                 ),
                 "flood": """select CensusBlock as block, 
@@ -223,10 +226,14 @@ class StudyRegion:
                         where Return_Period = '{rp}' 
                         and huScenarioName = '{sc}'
                         group by Tract
+                        HAVING Sum(ISNULL(Total, 0)) * {c} > 0
                 """.format(
                     s=self.name, c=constant, rp=self.returnPeriod, sc=self.scenario
                 ),
-                "tsunami": """select CensusBlock as block, SUM(ISNULL(TotalLoss, 0)) * {c} as EconLoss from {s}.dbo.tsuvResDelKTotB group by CensusBlock""".format(
+                "tsunami": """select CensusBlock as block, SUM(ISNULL(TotalLoss, 0)) * {c} as EconLoss 
+                from {s}.dbo.tsuvResDelKTotB group by CensusBlock
+                HAVING Sum(ISNULL(TotalLoss, 0)) * {c} > 0
+                """.format(
                     s=self.name, c=constant
                 ),
             }
