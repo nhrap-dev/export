@@ -1138,7 +1138,7 @@ class Report:
             if hazard == 'earthquake':
                 eqDataDictionary = {}
                 eqDataDictionary['title'] = self.title
-                eqDataDictionary['date'] = 'Hazus Report Run: {}'.format(
+                eqDataDictionary['date'] = 'HAZUS Report Generated: {}'.format(
                     datetime.datetime.now().strftime('%m-%d-%Y').lstrip('0')
                 )
                 # get bulk of results
@@ -1664,7 +1664,7 @@ class Report:
             if hazard == 'flood':
                 floodDataDictionary = {}
                 floodDataDictionary['title'] = self.title
-                floodDataDictionary['date'] = 'Hazus Report Run: {}'.format(
+                floodDataDictionary['date'] = 'HAZUS Report Generated: {}'.format(
                     datetime.datetime.now().strftime('%m-%d-%Y').lstrip('0')
                 )
                 # get bulk of results
@@ -2053,7 +2053,7 @@ class Report:
                 # get bulk of results
                 hurDataDictionary = {}
                 hurDataDictionary['title'] = self.title
-                hurDataDictionary['date'] = 'Hazus Report Run: {}'.format(
+                hurDataDictionary['date'] = 'HAZUS Report Generated: {}'.format(
                     datetime.datetime.now().strftime('%m-%d-%Y').lstrip('0')
                 )
                 try:
@@ -2496,7 +2496,7 @@ class Report:
             if hazard == 'tsunami':
                 tsDataDictionary = {}
                 tsDataDictionary['title'] = self.title
-                tsDataDictionary['date'] = 'Hazus Report Run: {}'.format(
+                tsDataDictionary['date'] = 'HAZUS Report Generated: {}'.format(
                     datetime.datetime.now().strftime('%m-%d-%Y').lstrip('0')
                 )
                 # get bulk of results
