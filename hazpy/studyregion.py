@@ -1487,7 +1487,6 @@ class StudyRegion:
             gdf: geopandas geodataframe -- a geodataframe of the counties
         """
         try:
-
             sql = """SELECT 
                         CountyFips as "countyfips",
                         CountyName as "name",
@@ -1507,6 +1506,30 @@ class StudyRegion:
         except:
             print("Unexpected error:", sys.exc_info()[0])
             raise
+
+    def getStates(self):
+        """Creates a dataframe of the state name and geometry for all states in the study region
+
+        Returns:
+            gdf: geopandas geodataframe -- a geodataframe of the states
+        """
+        try:
+            sql = """SELECT 
+                        Shape.STAsText() as "geometry",
+                        Shape.STSrid as "crs"
+                        FROM [{s}].[dbo].[hzState]
+                """.format(
+                s=self.name
+            )
+
+            df = self.query(sql)
+            df["geometry"] = df["geometry"].apply(loads)
+            gdf = gpd.GeoDataFrame(df, geometry="geometry")
+            return gdf
+        except:
+            print("Unexpected error:", sys.exc_info()[0])
+            raise
+
 
     def getTravelTimeToSafety(self):
         """Creates a geodataframe of the travel time to safety

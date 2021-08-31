@@ -71,9 +71,9 @@ class Report:
         self.icon = self.assets[icon]
         self.templateFillableLocation = 'Python_env/assets/templates'
         self.disclaimer = """The estimates of social and economic impacts contained in this report were produced using Hazus loss estimation methodology software which is based on current scientific and engineering knowledge. There are uncertainties inherent in any loss estimation
-            technique. Therefore, there may be significant differences between the modeled results contained in this report and the actual social and economic losses following a specific {}. These results can be improved by using enhanced inventory, geotechnical,
-            and observed ground motion data.""".format(self.hazard)
+            technique. Therefore, there may be significant differences between the modeled results contained in this report and the actual social and economic losses following a specific {}.""".format(self.hazard)
         self.getCounties = studyRegionClass.getCounties
+        self.getStates = studyRegionClass.getStates
         self._tempDirectory = 'hazpy-report-temp'
 
     def format_tick(self, num, pos):
@@ -142,294 +142,294 @@ class Report:
         return dollars
 
 # TODO: Disable this, if not using HTML reports - BC
-    def updateTemplate(self):
-        self.template = (
-            """
-            <html>
-                <head>
-                    <style>
-                        @page {
-                            size: a4 portrait;
-                            @frame header_frame {
-                                /*Static Frame*/ 
-                                -pdf-frame-content: header_content;
-                                left: 50pt;
-                                width: 512pt;
-                                top: 50pt;
-                                height: 40pt;
-                            }
-                            @frame content_frame {
-                                /*Content Frame*/
-                                left: 20px;
-                                right: 20px;
-                                top: 20px;
-                                bottom: 20px;
-                            }
-                            @frame footer_frame {
-                                /*Another static Frame*/
-                                -pdf-frame-content: footer_content;
-                                left: 50pt;
-                                width: 512pt;
-                                top: 772pt;
-                                height: 20pt;
-                            }
-                        }
-                        .header_border {
-                            font-size: 3px;
-                            width: 512pt;
-                            background-color: #0078a9;
-                            color: #0078a9;
-                            padding-top: 0;
-                            padding-bottom: 0;
-                            padding-left: 0;
-                            padding-right: 0;
-                        }
-                        .header {
-                            width: 512pt;
-                            border: 2px solid #abadb0;
-                            margin-top: 5px;
-                            margin-bottom: 5px;
-                            padding-top: 10px;
-                            padding-bottom: 10px;
-                            padding-left: 10px;
-                            padding-right: 10px;
-                        }
-                        .header_table_cell_icon {
-                            border: none;
-                            width: 100px;
-                            padding-top: 5px;
-                            padding-bottom: 5px;
-                            padding-left: 10px;
-                            padding-right: 0;
-                        }
-                        .header_table_cell_icon_img {
-                            width: auto;
-                            height: 60px;
-                        }
-                        .header_table_cell_text {
-                            border: none;
-                            width: 50%;
-                            text-align: left;
-                            margin-left: 20px;
-                            margin-left: 20px;
-                        }
-                        .header_table_cell_logo {
-                            padding-top: 0;
-                            padding-bottom: 0;
-                            padding-left: 35px;
-                            padding-right: 0;
-                            border: none;
-                        }
-                        .header_table_cell_logo_img {
-                            width: auto;
-                            height: 40px;
-                        }
-                        .header_title {
-                            font-size: 16px;
-                            padding-top: 10px;
-                            padding-bottom: 0;
-                            padding-left: 0;
-                            padding-right: 0;
-                            margin-top: 10px;
-                            margin-bottom: 0;
-                            margin-left: 0;
-                            margin-right: 0;
+    # def updateTemplate(self):
+    #     self.template = (
+    #         """
+    #         <html>
+    #             <head>
+    #                 <style>
+    #                     @page {
+    #                         size: a4 portrait;
+    #                         @frame header_frame {
+    #                             /*Static Frame*/ 
+    #                             -pdf-frame-content: header_content;
+    #                             left: 50pt;
+    #                             width: 512pt;
+    #                             top: 50pt;
+    #                             height: 40pt;
+    #                         }
+    #                         @frame content_frame {
+    #                             /*Content Frame*/
+    #                             left: 20px;
+    #                             right: 20px;
+    #                             top: 20px;
+    #                             bottom: 20px;
+    #                         }
+    #                         @frame footer_frame {
+    #                             /*Another static Frame*/
+    #                             -pdf-frame-content: footer_content;
+    #                             left: 50pt;
+    #                             width: 512pt;
+    #                             top: 772pt;
+    #                             height: 20pt;
+    #                         }
+    #                     }
+    #                     .header_border {
+    #                         font-size: 3px;
+    #                         width: 512pt;
+    #                         background-color: #0078a9;
+    #                         color: #0078a9;
+    #                         padding-top: 0;
+    #                         padding-bottom: 0;
+    #                         padding-left: 0;
+    #                         padding-right: 0;
+    #                     }
+    #                     .header {
+    #                         width: 512pt;
+    #                         border: 2px solid #abadb0;
+    #                         margin-top: 5px;
+    #                         margin-bottom: 5px;
+    #                         padding-top: 10px;
+    #                         padding-bottom: 10px;
+    #                         padding-left: 10px;
+    #                         padding-right: 10px;
+    #                     }
+    #                     .header_table_cell_icon {
+    #                         border: none;
+    #                         width: 100px;
+    #                         padding-top: 5px;
+    #                         padding-bottom: 5px;
+    #                         padding-left: 10px;
+    #                         padding-right: 0;
+    #                     }
+    #                     .header_table_cell_icon_img {
+    #                         width: auto;
+    #                         height: 60px;
+    #                     }
+    #                     .header_table_cell_text {
+    #                         border: none;
+    #                         width: 50%;
+    #                         text-align: left;
+    #                         margin-left: 20px;
+    #                         margin-left: 20px;
+    #                     }
+    #                     .header_table_cell_logo {
+    #                         padding-top: 0;
+    #                         padding-bottom: 0;
+    #                         padding-left: 35px;
+    #                         padding-right: 0;
+    #                         border: none;
+    #                     }
+    #                     .header_table_cell_logo_img {
+    #                         width: auto;
+    #                         height: 40px;
+    #                     }
+    #                     .header_title {
+    #                         font-size: 16px;
+    #                         padding-top: 10px;
+    #                         padding-bottom: 0;
+    #                         padding-left: 0;
+    #                         padding-right: 0;
+    #                         margin-top: 10px;
+    #                         margin-bottom: 0;
+    #                         margin-left: 0;
+    #                         margin-right: 0;
 
-                        }
-                        .header_subtitle {
-                            font-size: 12px;
-                            padding-top: 0;
-                            padding-bottom: 0;
-                            padding-left: 0;
-                            padding-right: 0;
-                            margin-top: 0;
-                            margin-bottom: 0;
-                            margin-left: 0;
-                            margin-right: 0;
-                        }
-                        .column_left {
-                            margin-top: 0;
-                            padding-top: 5px;
-                            padding-bottom: 0;
-                            padding-left: 0;
-                            padding-right: 5px;
-                            height: 690pt;
-                            vertical-align: top;
-                        }
-                        .column_right {
-                            margin-top: 0;
-                            padding-top: 5px;
-                            padding-bottom: 0;
-                            padding-left: 5px;
-                            padding-right: 0;
-                            height: 690pt;
-                            vertical-align: top;
-                        }
-                        .report_columns {
-                            padding-top: 5px;
-                            padding-bottom: 5px;
-                        }
-                        .result_container {
-                            padding-top: 0;
-                            padding-bottom: 0;
-                            padding-left: 0;
-                            padding-right: 0;
-                        }
-                        .result_container_spacer {
-                            font-size: 2px;
-                            width: 100%;
-                            background-color: #fff;
-                            color: #fff;
-                            padding-top: 0;
-                            padding-bottom: 0;
-                            padding-left: 0;
-                            padding-right: 0;
-                            margin-top: 0;
-                            margin-bottom: 0;
-                            margin-left: 0;
-                            margin-right: 0;
-                        }
-                        .results_table {
-                            height: auto;
-                            width: 100%;
-                            padding-top: 0;
-                            padding-bottom: 0;
-                            padding-left: 0;
-                            padding-right: 0;
-                            margin-top: 0;
-                            margin-bottom: 0;
-                            margin-left: 0;
-                            margin-right: 0;
-                        }
-                        .results_header {
-                            background-color: #0078a9;
-                            color: #000;
-                        }
-                        .results_table_header {
-                            background-color: #0078a9;
-                            margin-bottom: 0;
-                            padding-top: 3px;
-                            padding-bottom: 1px;
-                        }
-                        .results_table_header_title {
-                            color: #fff;
-                            text-align: left;
-                            padding-top: 3px;
-                            padding-bottom: 1px;
-                            padding-right: 1px;
-                            padding-left: 5px;
-                            width: 40%;
-                        }
-                        .results_table_header_title_solo {
-                            color: #fff;
-                            text-align: left;
-                            padding-top: 3px;
-                            padding-bottom: 1px;
-                            padding-left: 5px;
-                            width: 100%;
-                        }
-                        .results_table_header_total {
-                            color: #fff;
-                            text-align: right;
-                            vertical-align: top;
-                            padding-top: 3px;
-                            padding-bottom: 1px;
-                            padding-right: 1px;
-                            padding-left: 0px;
-                        }
-                        .results_table_header_number {
-                            color: #fff;
-                            text-align: left;
-                            padding-top: 3px;
-                            padding-bottom: 1px;
-                            padding-right: 1px;
-                            padding-left: 0px;
-                        }
-                        .results_table_cells_header {
-                            background-color: #abadb0;
-                            color: #fff;
-                            border: 1px solid #fff;
-                            margin-top: 0;
-                            padding-top: 3px;
-                            padding-bottom: 1px;
-                        }
-                        .results_table_cells {
-                            background-color: #f9f9f9;
-                            border: 1px solid #fff;
-                            color: #000;
-                            text-align: left;
-                            padding-top: 3px;
-                            padding-bottom: 1px;
-                            padding-left: 5px;
-                        }
-                        .results_table_img {
-                            width: 512pt;
-                            height: auto;
-                        }
-                        .disclaimer {
-                            color: #c3c3c3;
-                            font-size: 6pt;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div id="content_frame">
-                        <div class="header_border">_</div>
-                        <div class="header">
-                            <table>
-                            <tr>
-                                <td class="header_table_cell_icon">
-                                <img
-                                    class="header_table_cell_icon_img"
-                                    src='"""
-            + self.icon
-            + """'
-                                    alt="hazard"
-                                />
-                                </td>
-                                <td class="header_table_cell_text">
-                                    <h1 class="header_title">"""
-            + self.title
-            + """</h1>
-                                    <p class="header_subtitle">"""
-            + self.subtitle
-            + """</p>
-                                </td>
-                                <td class="header_table_cell_logo">
-                                <img
-                                    class="header_table_cell_logo_img"
-                                    src='"""
-            + self.assets['hazus']
-            + """'
-                                    alt="hazus"
-                                />
-                                </td>
-                            </tr>
-                            </table>
-                        </div>
-                        <div class="header_border">_</div>
-                        <table class="report_columns">
-                            <tr>
-                                <td class="column_left">
-                                """
-            + self.columnLeft
-            + """
-                                </td>
-                                <td class="column_right">
-                                """
-            + self.columnRight
-            + """
-                                </td>
-                            </tr>
-                        </table>
-                        <p class="disclaimer">"""
-            + self.disclaimer
-            + """</p>
-                    </div>
-                </body>
-            </html>
-            """
-        )
+    #                     }
+    #                     .header_subtitle {
+    #                         font-size: 12px;
+    #                         padding-top: 0;
+    #                         padding-bottom: 0;
+    #                         padding-left: 0;
+    #                         padding-right: 0;
+    #                         margin-top: 0;
+    #                         margin-bottom: 0;
+    #                         margin-left: 0;
+    #                         margin-right: 0;
+    #                     }
+    #                     .column_left {
+    #                         margin-top: 0;
+    #                         padding-top: 5px;
+    #                         padding-bottom: 0;
+    #                         padding-left: 0;
+    #                         padding-right: 5px;
+    #                         height: 690pt;
+    #                         vertical-align: top;
+    #                     }
+    #                     .column_right {
+    #                         margin-top: 0;
+    #                         padding-top: 5px;
+    #                         padding-bottom: 0;
+    #                         padding-left: 5px;
+    #                         padding-right: 0;
+    #                         height: 690pt;
+    #                         vertical-align: top;
+    #                     }
+    #                     .report_columns {
+    #                         padding-top: 5px;
+    #                         padding-bottom: 5px;
+    #                     }
+    #                     .result_container {
+    #                         padding-top: 0;
+    #                         padding-bottom: 0;
+    #                         padding-left: 0;
+    #                         padding-right: 0;
+    #                     }
+    #                     .result_container_spacer {
+    #                         font-size: 2px;
+    #                         width: 100%;
+    #                         background-color: #fff;
+    #                         color: #fff;
+    #                         padding-top: 0;
+    #                         padding-bottom: 0;
+    #                         padding-left: 0;
+    #                         padding-right: 0;
+    #                         margin-top: 0;
+    #                         margin-bottom: 0;
+    #                         margin-left: 0;
+    #                         margin-right: 0;
+    #                     }
+    #                     .results_table {
+    #                         height: auto;
+    #                         width: 100%;
+    #                         padding-top: 0;
+    #                         padding-bottom: 0;
+    #                         padding-left: 0;
+    #                         padding-right: 0;
+    #                         margin-top: 0;
+    #                         margin-bottom: 0;
+    #                         margin-left: 0;
+    #                         margin-right: 0;
+    #                     }
+    #                     .results_header {
+    #                         background-color: #0078a9;
+    #                         color: #000;
+    #                     }
+    #                     .results_table_header {
+    #                         background-color: #0078a9;
+    #                         margin-bottom: 0;
+    #                         padding-top: 3px;
+    #                         padding-bottom: 1px;
+    #                     }
+    #                     .results_table_header_title {
+    #                         color: #fff;
+    #                         text-align: left;
+    #                         padding-top: 3px;
+    #                         padding-bottom: 1px;
+    #                         padding-right: 1px;
+    #                         padding-left: 5px;
+    #                         width: 40%;
+    #                     }
+    #                     .results_table_header_title_solo {
+    #                         color: #fff;
+    #                         text-align: left;
+    #                         padding-top: 3px;
+    #                         padding-bottom: 1px;
+    #                         padding-left: 5px;
+    #                         width: 100%;
+    #                     }
+    #                     .results_table_header_total {
+    #                         color: #fff;
+    #                         text-align: right;
+    #                         vertical-align: top;
+    #                         padding-top: 3px;
+    #                         padding-bottom: 1px;
+    #                         padding-right: 1px;
+    #                         padding-left: 0px;
+    #                     }
+    #                     .results_table_header_number {
+    #                         color: #fff;
+    #                         text-align: left;
+    #                         padding-top: 3px;
+    #                         padding-bottom: 1px;
+    #                         padding-right: 1px;
+    #                         padding-left: 0px;
+    #                     }
+    #                     .results_table_cells_header {
+    #                         background-color: #abadb0;
+    #                         color: #fff;
+    #                         border: 1px solid #fff;
+    #                         margin-top: 0;
+    #                         padding-top: 3px;
+    #                         padding-bottom: 1px;
+    #                     }
+    #                     .results_table_cells {
+    #                         background-color: #f9f9f9;
+    #                         border: 1px solid #fff;
+    #                         color: #000;
+    #                         text-align: left;
+    #                         padding-top: 3px;
+    #                         padding-bottom: 1px;
+    #                         padding-left: 5px;
+    #                     }
+    #                     .results_table_img {
+    #                         width: 512pt;
+    #                         height: auto;
+    #                     }
+    #                     .disclaimer {
+    #                         color: #c3c3c3;
+    #                         font-size: 6pt;
+    #                     }
+    #                 </style>
+    #             </head>
+    #             <body>
+    #                 <div id="content_frame">
+    #                     <div class="header_border">_</div>
+    #                     <div class="header">
+    #                         <table>
+    #                         <tr>
+    #                             <td class="header_table_cell_icon">
+    #                             <img
+    #                                 class="header_table_cell_icon_img"
+    #                                 src='"""
+    #         + self.icon
+    #         + """'
+    #                                 alt="hazard"
+    #                             />
+    #                             </td>
+    #                             <td class="header_table_cell_text">
+    #                                 <h1 class="header_title">"""
+    #         + self.title
+    #         + """</h1>
+    #                                 <p class="header_subtitle">"""
+    #         + self.subtitle
+    #         + """</p>
+    #                             </td>
+    #                             <td class="header_table_cell_logo">
+    #                             <img
+    #                                 class="header_table_cell_logo_img"
+    #                                 src='"""
+    #         + self.assets['hazus']
+    #         + """'
+    #                                 alt="hazus"
+    #                             />
+    #                             </td>
+    #                         </tr>
+    #                         </table>
+    #                     </div>
+    #                     <div class="header_border">_</div>
+    #                     <table class="report_columns">
+    #                         <tr>
+    #                             <td class="column_left">
+    #                             """
+    #         + self.columnLeft
+    #         + """
+    #                             </td>
+    #                             <td class="column_right">
+    #                             """
+    #         + self.columnRight
+    #         + """
+    #                             </td>
+    #                         </tr>
+    #                     </table>
+    #                     <p class="disclaimer">"""
+    #         + self.disclaimer
+    #         + """</p>
+    #                 </div>
+    #             </body>
+    #         </html>
+    #         """
+    #     )
 
     def addTable(self, df, title, total, column):
         """Adds a table to the report
@@ -576,15 +576,11 @@ class Report:
                 # Apply minimal buffer to not cover hazards near study area boundary
                 boundary['geometry'] = boundary.geometry.buffer(.0005)
                 boundary.to_crs('EPSG:3857').plot(ax=ax, facecolor="none", edgecolor="darkgray", linewidth=0.5, alpha=0.7, linestyle='solid')
-            # if not hasattr(gdf, 'crs'):
-            #         #gdf.crs={'init': 'epsg:4326'}
-            #         gdf.crs='epsg:4326'
-            #         gdf.set_crs('epsg:4326')
+            
             if type(gdf) != gpd.GeoDataFrame:
                 gdf['geometry'] = gdf['geometry'].apply(str)
                 gdf['geometry'] = gdf['geometry'].apply(loads)
                 gdf = gpd.GeoDataFrame(gdf, geometry='geometry', crs=crs)
-            
             gdf.crs='epsg:4326'
 
             try:
@@ -597,7 +593,8 @@ class Report:
                     edgecolor="darkgrey",
                     scheme=scheme,
                     classification_kwds=classification_kwds,
-                    norm=norm
+                    norm=norm,
+                    alpha=0.9
                 )
             except:
                 gdf['geometry'] = gdf['geometry'].apply(str)
@@ -612,8 +609,23 @@ class Report:
                     classification_kwds=classification_kwds,
                     norm=norm
                 )
+            # Add county layer
+            counties = self.getCounties()
+            counties.crs = 'epsg:4326'
+            counties.to_crs('EPSG:3857').plot(
+                facecolor="none", edgecolor="black", linewidth=0.15, ax=ax, linestyle='solid', alpha=0.7
+            )
+
+            # Add state layer
+            states = self.getStates()
+            states.crs = 'epsg:4326'
+            states.to_crs('EPSG:3857').plot(
+                facecolor="none", edgecolor="black", linewidth=0.5, ax=ax, linestyle='solid', alpha=0.7
+            )
+
             # add basemap
-            cx.add_basemap(ax, source=cx.providers.Esri.WorldGrayCanvas)
+            cx.add_basemap(ax, source=cx.providers.Stamen.TonerLite, attribution=None, attribution_size=5)
+            
             if legend == True:
                 sm = plt.cm.ScalarMappable(
                     cmap=cmap,
@@ -787,7 +799,14 @@ class Report:
             except:
                 print("Unexpected error:", sys.exc_info()[0])
                 pass
-        except:
+        except Exception as e:
+            print('\n')
+            print(e)
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print(fname)
+            print(exc_type, exc_tb.tb_lineno)
+            print('\n')
             print("Unexpected error:", sys.exc_info()[0])
             pass
 
@@ -978,7 +997,7 @@ class Report:
         imageRectangle = fitz.Rect(x1, y1, x2, y2)
         firstPage = template[0]
         firstPage.insertImage(
-            imageRectangle, filename=imageFile, keep_proportion=False)
+            imageRectangle, filename=imageFile, keep_proportion=True)
         template.save(
             template.name,
             deflate=True,
