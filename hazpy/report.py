@@ -5,8 +5,8 @@ import sys
 
 import fitz
 import geopandas as gpd
-import matplotlib.patheffects as pe
 import matplotlib.ticker as ticker
+import matplotlib.patheffects as pe
 import pandas as pd
 import seaborn as sns
 import warnings
@@ -557,11 +557,9 @@ class Report:
         """
         try:
             fig = plt.figure(figsize=(10, 10), dpi=300)
-            # Set background color to light grey
-            #fig.patch.set_facecolor('#e1e1e1')
             ax = fig.gca()
             ax2 = fig.gca()
-            crs = 'epsg:4326'
+            crs = 'EPSG:4326'
             # Add hazard boundary to map
             if boundary:
                 boundary = self._Report__getHazardBoundary()
@@ -581,10 +579,10 @@ class Report:
                 gdf['geometry'] = gdf['geometry'].apply(str)
                 gdf['geometry'] = gdf['geometry'].apply(loads)
                 gdf = gpd.GeoDataFrame(gdf, geometry='geometry', crs=crs)
-            gdf.crs='epsg:4326'
+            gdf.crs='EPSG:4326'
 
             try:
-                gdf.to_crs('epsg:3857', inplace=True)
+                gdf.to_crs('EPSG:3857', inplace=True)
                 gdf.plot(
                     column=field,
                     cmap=cmap,
@@ -609,23 +607,43 @@ class Report:
                     classification_kwds=classification_kwds,
                     norm=norm
                 )
+
             # Add county layer
             counties = self.getCounties()
-            counties.crs = 'epsg:4326'
-            counties.to_crs('EPSG:3857').plot(
-                facecolor="none", edgecolor="black", linewidth=0.15, ax=ax, linestyle='solid', alpha=0.7
-            )
+            counties.crs = 'EPSG:4326'
+            counties.to_crs('EPSG:3857').plot(facecolor="none", edgecolor="gray", linewidth=0.15, ax=ax, linestyle='solid', alpha=0.7)
+            # Add county labels
+            labelDF = counties.to_crs('EPSG:3857')
+            gdf.to_crs('EPSG:3857')
+            gdf['dissolve'] = 1
+            mask = gdf.dissolve(by='dissolve').envelope
+            mask = mask.buffer(0)
+            labelDF['geometry'] = labelDF.buffer(0)
+            labelDF = gpd.clip(labelDF, mask)
+            labelDF['centroid'] = [x.centroid for x in labelDF['geometry']]
+            for row in range(len(labelDF)):
+                name = labelDF.iloc[row]['name']
+                coords = labelDF.iloc[row]['centroid']
+                ax.annotate(
+                    text=name,
+                    xy=(float(coords.x), float(coords.y)),
+                    horizontalalignment='center',
+                    size=3,
+                    color='white',
+                    path_effects=[pe.withStroke(
+                        linewidth=1, foreground='#404040')],
+                )
 
             # Add state layer
             states = self.getStates()
-            states.crs = 'epsg:4326'
+            states.crs = 'EPSG:4326'
             states.to_crs('EPSG:3857').plot(
                 facecolor="none", edgecolor="black", linewidth=0.5, ax=ax, linestyle='solid', alpha=0.7
             )
 
-            # add basemap
-            cx.add_basemap(ax, source=cx.providers.Stamen.TonerLite, attribution=None, attribution_size=5)
-            
+            # Add basemap
+            cx.add_basemap(ax, source=cx.providers.Stamen.TonerLite, attribution=None, attribution_size=5, alpha=0.7)
+
             if legend == True:
                 sm = plt.cm.ScalarMappable(
                     cmap=cmap,
@@ -699,15 +717,11 @@ class Report:
             ylim = ([gdf.total_bounds[1],  gdf.total_bounds[3]])
             ax.set_xlim(xlim)
             ax.set_ylim(ylim)
-            # # else:
-            # TODO: Review this - BC
             #ax.autoscale(enable=True, axis='both', tight=False)
             src = os.getcwd() + '/' + self._tempDirectory + '/' + str(uuid()) + ".png"
-            # TODO: Review pad_inches - BC
             fig.savefig(
                 src,
                 facecolor=fig.get_facecolor(),
-                #pad_inches=0.25,
                 bbox_inches='tight',
                 dpi=600,
             )
@@ -753,7 +767,7 @@ class Report:
                     y2 = 372
                 if title == 'map-Water Depth (ft) - 100-year':
                     x1 = 319
-                    y1 = 407
+                    y1 = 412
                     x2 = 597
                     y2 = 628
             if self.hazard == 'earthquake':
@@ -925,7 +939,7 @@ class Report:
                     y2 = 234
 
             if self.hazard != 'earthquake':
-                self.insert_image_to_pdf(src, title, x1, y1, x2, y2)
+                self.insert_image_to_pdf(src, title, x1, y1, x2, y2, keep_proportion=False)
 
         except:
             print("Unexpected error:", sys.exc_info()[0])
@@ -978,7 +992,7 @@ class Report:
                 shutil.rmtree(os.getcwd() + '/' + self._tempDirectory)
             raise
 
-    def insert_image_to_pdf(self, src, title, x1, y1, x2, y2):
+    def insert_image_to_pdf(self, src, title, x1, y1, x2, y2, keep_proportion=True):
         """Insert image (map/histogram) into fillable PDF
 
         Args:
@@ -997,7 +1011,7 @@ class Report:
         imageRectangle = fitz.Rect(x1, y1, x2, y2)
         firstPage = template[0]
         firstPage.insertImage(
-            imageRectangle, filename=imageFile, keep_proportion=True)
+            imageRectangle, filename=imageFile, keep_proportion=keep_proportion)
         template.save(
             template.name,
             deflate=True,
