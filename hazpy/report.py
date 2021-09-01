@@ -775,7 +775,8 @@ class Report:
                     x1 = 319
                     y1 = 114
                     x2 = 597
-                    y2 = 390
+                    #y2 = 390
+                    y2 = 320
                 if title == 'map-Peak Ground Acceleration (g)':
                     x1 = 315
                     y1 = 425
@@ -939,7 +940,7 @@ class Report:
                     y2 = 234
 
             if self.hazard != 'earthquake':
-                self.insert_image_to_pdf(src, title, x1, y1, x2, y2, keep_proportion=False)
+                self.insert_image_to_pdf(src, title, x1, y1, x2, y2)
 
         except:
             print("Unexpected error:", sys.exc_info()[0])
@@ -992,7 +993,7 @@ class Report:
                 shutil.rmtree(os.getcwd() + '/' + self._tempDirectory)
             raise
 
-    def insert_image_to_pdf(self, src, title, x1, y1, x2, y2, keep_proportion=True):
+    def insert_image_to_pdf(self, src, title, x1, y1, x2, y2):
         """Insert image (map/histogram) into fillable PDF
 
         Args:
@@ -1011,7 +1012,7 @@ class Report:
         imageRectangle = fitz.Rect(x1, y1, x2, y2)
         firstPage = template[0]
         firstPage.insertImage(
-            imageRectangle, filename=imageFile, keep_proportion=keep_proportion)
+            imageRectangle, filename=imageFile)
         template.save(
             template.name,
             deflate=True,
@@ -1613,6 +1614,9 @@ class Report:
                         'color_list', [
                             Color(color).rgb for color in map_colors]
                     )
+                    # Are these PGV values? - BC
+                    # TODO: Review if these are PGV or PGA values --> talk with Doug
+                    # TODO: Are there any conversions needed?
                     bins = [
                         0.002,
                         0.014,
