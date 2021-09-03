@@ -1,18 +1,5 @@
-import datetime
-import os
-import shutil
-import sys
-
-import fitz
-import geopandas as gpd
-import matplotlib.ticker as ticker
-import matplotlib.patheffects as pe
-import pandas as pd
-import seaborn as sns
-import warnings
 from colour import Color
 from jenkspy import jenks_breaks as nb
-#import math
 from matplotlib import pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap, Normalize
 from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
@@ -20,8 +7,21 @@ from PyPDF2 import PdfFileReader, PdfFileWriter
 from PyPDF2.generic import BooleanObject, IndirectObject, NameObject, TextStringObject, DictionaryObject, NumberObject
 from shapely.wkt import loads
 from uuid import uuid4 as uuid
-#from xhtml2pdf import pisa
+
 import contextily as cx
+import datetime
+import fitz
+import geopandas as gpd
+import matplotlib.ticker as ticker
+import matplotlib.patheffects as pe
+import os
+import pandas as pd
+import seaborn as sns
+import shutil
+import sys
+import warnings
+
+#from xhtml2pdf import pisa
 
 # Disable pandas warnings
 warnings.filterwarnings('ignore')
@@ -83,11 +83,11 @@ class Report:
             num /= 1000.0
         # add more suffixes if you need them
         if self.hazard == 'flood':
-            #return '$%.0f%s' % (num, ['', ' K', ' M', ' B', ' T'][magnitude])
-            return '$%.2f%s' % (num, ['', ' K', ' M', ' B', ' T'][magnitude])
+            return '$%.0f%s' % (num, ['', ' K', ' M', ' B', ' T'][magnitude])
+            #return '$%.2f%s' % (num, ['', ' K', ' M', ' B', ' T'][magnitude])
         else:
-            #return '%.0f%s' % (num, ['', ' K', ' M', ' B', ' T'][magnitude])
-            return '%.2f%s' % (num, ['', ' K', ' M', ' B', ' T'][magnitude])
+            return '%.0f%s' % (num, ['', ' K', ' M', ' B', ' T'][magnitude])
+            #return '%.2f%s' % (num, ['', ' K', ' M', ' B', ' T'][magnitude])
 
     # def format_tick(self, num, pos):
     #     millnames = ['',' K',' M',' B',' T']
@@ -97,6 +97,14 @@ class Report:
     #     return '{:.0f}{}'.format(n / 10**(3 * millidx), millnames[millidx])
 
     def abbreviate(self, number):
+        """[summary]
+
+        Args:
+            number ([type]): [description]
+
+        Returns:
+            [type]: [description]
+        """
         try:
             digits = 0
             number = float(number)
@@ -120,6 +128,16 @@ class Report:
             return str(number)
 
     def addCommas(self, number, abbreviate=False, truncate=False):
+        """[summary]
+
+        Args:
+            number ([type]): [description]
+            abbreviate (bool, optional): [description]. Defaults to False.
+            truncate (bool, optional): [description]. Defaults to False.
+
+        Returns:
+            [type]: [description]
+        """
         if truncate:
             number = int(round(number))
         if abbreviate:
@@ -129,6 +147,16 @@ class Report:
         return number
 
     def toDollars(self, number, abbreviate=False, truncate=False):
+        """[summary]
+
+        Args:
+            number ([type]): [description]
+            abbreviate (bool, optional): [description]. Defaults to False.
+            truncate (bool, optional): [description]. Defaults to False.
+
+        Returns:
+            [type]: [description]
+        """
         if truncate:
             number = int(round(number))
         if abbreviate:
@@ -140,296 +168,6 @@ class Report:
             if len(dollarsSplit) > 1:
                 dollars = '.'.join([dollarsSplit[0], dollarsSplit[1][0:1]])
         return dollars
-
-# TODO: Disable this, if not using HTML reports - BC
-    # def updateTemplate(self):
-    #     self.template = (
-    #         """
-    #         <html>
-    #             <head>
-    #                 <style>
-    #                     @page {
-    #                         size: a4 portrait;
-    #                         @frame header_frame {
-    #                             /*Static Frame*/ 
-    #                             -pdf-frame-content: header_content;
-    #                             left: 50pt;
-    #                             width: 512pt;
-    #                             top: 50pt;
-    #                             height: 40pt;
-    #                         }
-    #                         @frame content_frame {
-    #                             /*Content Frame*/
-    #                             left: 20px;
-    #                             right: 20px;
-    #                             top: 20px;
-    #                             bottom: 20px;
-    #                         }
-    #                         @frame footer_frame {
-    #                             /*Another static Frame*/
-    #                             -pdf-frame-content: footer_content;
-    #                             left: 50pt;
-    #                             width: 512pt;
-    #                             top: 772pt;
-    #                             height: 20pt;
-    #                         }
-    #                     }
-    #                     .header_border {
-    #                         font-size: 3px;
-    #                         width: 512pt;
-    #                         background-color: #0078a9;
-    #                         color: #0078a9;
-    #                         padding-top: 0;
-    #                         padding-bottom: 0;
-    #                         padding-left: 0;
-    #                         padding-right: 0;
-    #                     }
-    #                     .header {
-    #                         width: 512pt;
-    #                         border: 2px solid #abadb0;
-    #                         margin-top: 5px;
-    #                         margin-bottom: 5px;
-    #                         padding-top: 10px;
-    #                         padding-bottom: 10px;
-    #                         padding-left: 10px;
-    #                         padding-right: 10px;
-    #                     }
-    #                     .header_table_cell_icon {
-    #                         border: none;
-    #                         width: 100px;
-    #                         padding-top: 5px;
-    #                         padding-bottom: 5px;
-    #                         padding-left: 10px;
-    #                         padding-right: 0;
-    #                     }
-    #                     .header_table_cell_icon_img {
-    #                         width: auto;
-    #                         height: 60px;
-    #                     }
-    #                     .header_table_cell_text {
-    #                         border: none;
-    #                         width: 50%;
-    #                         text-align: left;
-    #                         margin-left: 20px;
-    #                         margin-left: 20px;
-    #                     }
-    #                     .header_table_cell_logo {
-    #                         padding-top: 0;
-    #                         padding-bottom: 0;
-    #                         padding-left: 35px;
-    #                         padding-right: 0;
-    #                         border: none;
-    #                     }
-    #                     .header_table_cell_logo_img {
-    #                         width: auto;
-    #                         height: 40px;
-    #                     }
-    #                     .header_title {
-    #                         font-size: 16px;
-    #                         padding-top: 10px;
-    #                         padding-bottom: 0;
-    #                         padding-left: 0;
-    #                         padding-right: 0;
-    #                         margin-top: 10px;
-    #                         margin-bottom: 0;
-    #                         margin-left: 0;
-    #                         margin-right: 0;
-
-    #                     }
-    #                     .header_subtitle {
-    #                         font-size: 12px;
-    #                         padding-top: 0;
-    #                         padding-bottom: 0;
-    #                         padding-left: 0;
-    #                         padding-right: 0;
-    #                         margin-top: 0;
-    #                         margin-bottom: 0;
-    #                         margin-left: 0;
-    #                         margin-right: 0;
-    #                     }
-    #                     .column_left {
-    #                         margin-top: 0;
-    #                         padding-top: 5px;
-    #                         padding-bottom: 0;
-    #                         padding-left: 0;
-    #                         padding-right: 5px;
-    #                         height: 690pt;
-    #                         vertical-align: top;
-    #                     }
-    #                     .column_right {
-    #                         margin-top: 0;
-    #                         padding-top: 5px;
-    #                         padding-bottom: 0;
-    #                         padding-left: 5px;
-    #                         padding-right: 0;
-    #                         height: 690pt;
-    #                         vertical-align: top;
-    #                     }
-    #                     .report_columns {
-    #                         padding-top: 5px;
-    #                         padding-bottom: 5px;
-    #                     }
-    #                     .result_container {
-    #                         padding-top: 0;
-    #                         padding-bottom: 0;
-    #                         padding-left: 0;
-    #                         padding-right: 0;
-    #                     }
-    #                     .result_container_spacer {
-    #                         font-size: 2px;
-    #                         width: 100%;
-    #                         background-color: #fff;
-    #                         color: #fff;
-    #                         padding-top: 0;
-    #                         padding-bottom: 0;
-    #                         padding-left: 0;
-    #                         padding-right: 0;
-    #                         margin-top: 0;
-    #                         margin-bottom: 0;
-    #                         margin-left: 0;
-    #                         margin-right: 0;
-    #                     }
-    #                     .results_table {
-    #                         height: auto;
-    #                         width: 100%;
-    #                         padding-top: 0;
-    #                         padding-bottom: 0;
-    #                         padding-left: 0;
-    #                         padding-right: 0;
-    #                         margin-top: 0;
-    #                         margin-bottom: 0;
-    #                         margin-left: 0;
-    #                         margin-right: 0;
-    #                     }
-    #                     .results_header {
-    #                         background-color: #0078a9;
-    #                         color: #000;
-    #                     }
-    #                     .results_table_header {
-    #                         background-color: #0078a9;
-    #                         margin-bottom: 0;
-    #                         padding-top: 3px;
-    #                         padding-bottom: 1px;
-    #                     }
-    #                     .results_table_header_title {
-    #                         color: #fff;
-    #                         text-align: left;
-    #                         padding-top: 3px;
-    #                         padding-bottom: 1px;
-    #                         padding-right: 1px;
-    #                         padding-left: 5px;
-    #                         width: 40%;
-    #                     }
-    #                     .results_table_header_title_solo {
-    #                         color: #fff;
-    #                         text-align: left;
-    #                         padding-top: 3px;
-    #                         padding-bottom: 1px;
-    #                         padding-left: 5px;
-    #                         width: 100%;
-    #                     }
-    #                     .results_table_header_total {
-    #                         color: #fff;
-    #                         text-align: right;
-    #                         vertical-align: top;
-    #                         padding-top: 3px;
-    #                         padding-bottom: 1px;
-    #                         padding-right: 1px;
-    #                         padding-left: 0px;
-    #                     }
-    #                     .results_table_header_number {
-    #                         color: #fff;
-    #                         text-align: left;
-    #                         padding-top: 3px;
-    #                         padding-bottom: 1px;
-    #                         padding-right: 1px;
-    #                         padding-left: 0px;
-    #                     }
-    #                     .results_table_cells_header {
-    #                         background-color: #abadb0;
-    #                         color: #fff;
-    #                         border: 1px solid #fff;
-    #                         margin-top: 0;
-    #                         padding-top: 3px;
-    #                         padding-bottom: 1px;
-    #                     }
-    #                     .results_table_cells {
-    #                         background-color: #f9f9f9;
-    #                         border: 1px solid #fff;
-    #                         color: #000;
-    #                         text-align: left;
-    #                         padding-top: 3px;
-    #                         padding-bottom: 1px;
-    #                         padding-left: 5px;
-    #                     }
-    #                     .results_table_img {
-    #                         width: 512pt;
-    #                         height: auto;
-    #                     }
-    #                     .disclaimer {
-    #                         color: #c3c3c3;
-    #                         font-size: 6pt;
-    #                     }
-    #                 </style>
-    #             </head>
-    #             <body>
-    #                 <div id="content_frame">
-    #                     <div class="header_border">_</div>
-    #                     <div class="header">
-    #                         <table>
-    #                         <tr>
-    #                             <td class="header_table_cell_icon">
-    #                             <img
-    #                                 class="header_table_cell_icon_img"
-    #                                 src='"""
-    #         + self.icon
-    #         + """'
-    #                                 alt="hazard"
-    #                             />
-    #                             </td>
-    #                             <td class="header_table_cell_text">
-    #                                 <h1 class="header_title">"""
-    #         + self.title
-    #         + """</h1>
-    #                                 <p class="header_subtitle">"""
-    #         + self.subtitle
-    #         + """</p>
-    #                             </td>
-    #                             <td class="header_table_cell_logo">
-    #                             <img
-    #                                 class="header_table_cell_logo_img"
-    #                                 src='"""
-    #         + self.assets['hazus']
-    #         + """'
-    #                                 alt="hazus"
-    #                             />
-    #                             </td>
-    #                         </tr>
-    #                         </table>
-    #                     </div>
-    #                     <div class="header_border">_</div>
-    #                     <table class="report_columns">
-    #                         <tr>
-    #                             <td class="column_left">
-    #                             """
-    #         + self.columnLeft
-    #         + """
-    #                             </td>
-    #                             <td class="column_right">
-    #                             """
-    #         + self.columnRight
-    #         + """
-    #                             </td>
-    #                         </tr>
-    #                     </table>
-    #                     <p class="disclaimer">"""
-    #         + self.disclaimer
-    #         + """</p>
-    #                 </div>
-    #             </body>
-    #         </html>
-    #         """
-    #     )
 
     def addTable(self, df, title, total, column):
         """Adds a table to the report
@@ -492,40 +230,6 @@ class Report:
         if column == 'right':
             self.columnRight = self.columnRight + template
 
-    # def addImage(self, src, title, column):
-    #     """Adds image block to the report
-
-    #     Keyword Arguments: \n
-    #         src: str -- the path and filename of the image
-    #         title: str -- the title of the image
-    #         column: str -- which column in the report to add to (options: 'left', 'right')
-    #     """
-    #     template = (
-    #         """
-    #         <div class="result_container">
-    #             <table class="results_table">
-    #             <tr class="results_table_header">
-    #                 <th class="results_table_header_title_solo">
-    #                 """
-    #         + title
-    #         + """
-    #                 </th>
-    #             </tr>
-    #             </table>
-    #             <img
-    #             class="results_table_img"
-    #             src='"""
-    #         + src
-    #         + """'
-    #             alt='"""
-    #         + title
-    #         + """'
-    #             />
-    #         </div>
-    #         <div class="result_container_spacer">_</div>
-    #         """
-    #     )
-
     def addMap(
         self,
         gdf,
@@ -538,7 +242,8 @@ class Report:
         scheme=None,
         classification_kwds=None,
         norm=None,
-        boundary=True
+        boundary=True,
+        breaks=None
     ):
         """Adds a map to the report
 
@@ -644,68 +349,25 @@ class Report:
             # Add basemap
             cx.add_basemap(ax, source=cx.providers.Stamen.TonerLite, attribution=None, attribution_size=5, alpha=0.7)
 
-            if legend == True:
-                sm = plt.cm.ScalarMappable(
-                    cmap=cmap,
-                    norm=plt.Normalize(
-                        vmin=gdf[field].min(), vmax=gdf[field].max()),
-                )
-                sm._A = []
-
-                divider = make_axes_locatable(ax)
-                cax = divider.append_axes("top", size="10%", pad="20%")
-                cb = fig.colorbar(sm, cax=cax, orientation="horizontal")
-                cb.outline.set_visible(False)
-                if formatTicks == True:
-                    cb.ax.xaxis.set_major_formatter(
-                        ticker.FuncFormatter(
-                            lambda x, p: self.addCommas(
-                                x, abbreviate=True, truncate=True
-                            )
-                        )
-                    )
-
-                counties = self.getCounties()
-                # reduce counties to those that intersect the results
-                intersect = counties.intersects(gdf.geometry)
-                counties = counties[intersect]
-
-                gdf['dissolve'] = 1
-                mask = gdf.dissolve(by='dissolve').envelope
-                mask = mask.buffer(0)
-                counties['geometry'] = counties.buffer(0)
-                counties = gpd.clip(counties, mask)
-                counties.plot(
-                    facecolor="none", edgecolor="darkgrey", linewidth=0.2, ax=ax2
-                )
-                annotationDf = counties.sort_values(
-                    'size', ascending=False)[0:5]
-                annotationDf = annotationDf.sort_values('size', ascending=True)
-
-                annotationDf['centroid'] = [
-                    x.centroid for x in annotationDf['geometry']
-                ]
-                # TODO: Remove mazSize? - BC
-                #maxSize = annotationDf['size'].max()
-                topFontSize = 2.5
-                annotationDf['fontSize'] = topFontSize * (
-                    annotationDf['size'] / annotationDf['size'].max()
-                ) + (
-                    topFontSize
-                    - ((annotationDf['size'] / annotationDf['size'].max()) * 2)
-                )
-                for row in range(len(annotationDf)):
-                    name = annotationDf.iloc[row]['name']
-                    coords = annotationDf.iloc[row]['centroid']
-                    ax.annotate(
-                        s=name,
-                        xy=(float(coords.x), float(coords.y)),
-                        horizontalalignment='center',
-                        size=annotationDf.iloc[row]['fontSize'],
-                        color='white',
-                        path_effects=[pe.withStroke(
-                            linewidth=1, foreground='#404040')],
-                    )
+            # Create legend
+            # sm = plt.cm.ScalarMappable(
+            #     cmap=cmap,
+            #     norm=norm,
+            #     )
+            # sm._A = []
+            # formatTicks = True
+            # divider = make_axes_locatable(ax)
+            # cax = divider.append_axes("top", size="10%", pad="20%")
+            # cb = fig.colorbar(sm, cax=cax, orientation="horizontal")
+            # cb.outline.set_visible(False)
+            # if formatTicks == True:
+            #     cb.ax.xaxis.set_major_formatter(
+            #         ticker.FuncFormatter(
+            #             lambda x, p: self.addCommas(
+            #                 x, abbreviate=True, truncate=True
+            #             )
+            #         )
+            #     )
 
             fontsize = 3
             for idx in range(len(fig.axes)):
@@ -725,38 +387,37 @@ class Report:
                 bbox_inches='tight',
                 dpi=600,
             )
+            
+            # Create legend & export as separate PNG
+    #         sm = plt.cm.ScalarMappable(
+    #             cmap=cmap,
+    #             #norm=None,
+    #             )
+    #         sm._A = []
+    # #        formatTicks = True
+    #         divider = make_axes_locatable(ax)
+    #         cax = divider.append_axes("top", size="10%", pad="20%")
+    #         cb = fig.colorbar(sm, cax=cax, orientation="horizontal", ticks=breaks)
+    #         cb.outline.set_visible(False)
+    #         cb.ax.set_xticklabels(breaks)
+            # if formatTicks == True:
+            #     cb.ax.xaxis.set_major_formatter(
+            #         ticker.FuncFormatter(
+            #             lambda x, p: self.addCommas(
+            #                 x, abbreviate=False, truncate=False
+            #             )
+            #         )
+            #     )
+            # ax.remove()
+            # legend_file = os.getcwd() + '/' + self._tempDirectory + '/legend-' + str(uuid()) + ".png"
+            # plt.savefig(
+            #     legend_file,
+            #     bbox_inches='tight',
+            #     dpi=600,
+            # )
             fig.clf()
             plt.clf()
 
-            template = (
-                """
-                <div class="result_container">
-                    <table class="results_table">
-                    <tr class="results_table_header">
-                        <th class="results_table_header_title_solo">
-                        """
-                + title
-                + """
-                        </th>
-                    </tr>
-                    </table>
-                    <img
-                    class="results_table_img"
-                    src='"""
-                + src
-                + """'
-                    alt='"""
-                + title
-                + """'
-                    />
-                </div>
-                <div class="result_container_spacer">_</div>
-                """
-            )
-            if column == 'left':
-                self.columnLeft = self.columnLeft + template
-            if column == 'right':
-                self.columnRight = self.columnRight + template
             # Convert PNG to PDF
             title = 'map-' + title
             if self.hazard == 'flood':
@@ -775,8 +436,7 @@ class Report:
                     x1 = 319
                     y1 = 114
                     x2 = 597
-                    #y2 = 390
-                    y2 = 320
+                    y2 = 350
                 if title == 'map-Peak Ground Acceleration (g)':
                     x1 = 315
                     y1 = 425
@@ -814,14 +474,7 @@ class Report:
             except:
                 print("Unexpected error:", sys.exc_info()[0])
                 pass
-        except Exception as e:
-            print('\n')
-            print(e)
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            print(fname)
-            print(exc_type, exc_tb.tb_lineno)
-            print('\n')
+        except:
             print("Unexpected error:", sys.exc_info()[0])
             pass
 
@@ -855,7 +508,7 @@ class Report:
                     y.append(df[df[xCol] == category][valueColumn].values[0])
                     hue.append(valueColumn)
             dfPlot = pd.DataFrame({'x': x, 'y': y, 'hue': hue})
-            plt.figure(figsize=(5, 3))
+            plt.figure(figsize=(5, 3), dpi=300)
             colorPalette = dict(zip(dfPlot.hue.unique(), colors))
             ax = sns.barplot(x='x', y='y', hue='hue',
                              data=dfPlot, palette=colorPalette)
@@ -877,35 +530,6 @@ class Report:
             plt.savefig(src, pad_inches=0, bbox_inches='tight', dpi=600)
             plt.clf()
 
-            template = (
-                """
-                <div class="result_container">
-                    <table class="results_table">
-                    <tr class="results_table_header">
-                        <th class="results_table_header_title_solo">
-                        """
-                + title
-                + """
-                        </th>
-                    </tr>
-                    </table>
-                    <img
-                    class="results_table_img"
-                    src='"""
-                + src
-                + """'
-                    alt='"""
-                + title
-                + """'
-                    />
-                </div>
-                <div class="result_container_spacer">_</div>
-                """
-            )
-            if column == 'left':
-                self.columnLeft = self.columnLeft + template
-            if column == 'right':
-                self.columnRight = self.columnRight + template
             if self.hazard == 'flood':
                 if title == 'Building Damage By Occupancy':
                     x1 = 19
@@ -1172,7 +796,7 @@ class Report:
             if hazard == 'earthquake':
                 eqDataDictionary = {}
                 eqDataDictionary['title'] = self.title
-                eqDataDictionary['date'] = 'HAZUS Report Generated: {}'.format(
+                eqDataDictionary['date'] = 'Hazus Report Generated: {}'.format(
                     datetime.datetime.now().strftime('%m-%d-%Y').lstrip('0')
                 )
                 # get bulk of results
@@ -1598,7 +1222,7 @@ class Report:
                     gdf = self._Report__getHazardGeoDataFrame()
                     title = 'Peak Ground Acceleration (g)'
                     # limit the extent
-                    gdf = gdf[gdf['PARAMVALUE'] > 0.1]
+                   # gdf = gdf[gdf['PARAMVALUE'] > 0.1]
                     map_colors = [
                         '#ffffff',
                         '#bfccff',
@@ -1701,7 +1325,7 @@ class Report:
             if hazard == 'flood':
                 floodDataDictionary = {}
                 floodDataDictionary['title'] = self.title
-                floodDataDictionary['date'] = 'HAZUS Report Generated: {}'.format(
+                floodDataDictionary['date'] = 'Hazus Report Generated: {}'.format(
                     datetime.datetime.now().strftime('%m-%d-%Y').lstrip('0')
                 )
                 # get bulk of results
@@ -1762,12 +1386,12 @@ class Report:
                         economicResults, counties, how="inner", on=['countyfips']
                     )
                     economicLoss.drop(
-                        ['size', 'countyfips', 'state', 'geometry', 'crs'],
+                        ['size', 'countyfips', 'geometry', 'crs'],
                         axis=1,
                         inplace=True,
                     )
                     economicLoss.columns = [
-                        'TopBlocks', 'EconomicLoss', 'CountyName']
+                        'TopBlocks', 'EconomicLoss', 'CountyName', 'State']
                     # populate total
                     total = self.addCommas(
                         economicLoss['EconomicLoss'].sum(),
@@ -1784,8 +1408,9 @@ class Report:
                         for x in economicLoss['EconomicLoss']
                     ]
                     columns = {
-                        'econloss_county_': 'TopBlocks',
-                        'econloss_state_': 'CountyName',
+                        'econloss_block_': 'TopBlocks',
+                        'econloss_county_': 'CountyName',
+                        'econloss_state_': 'State',
                         'econloss_total_': 'EconomicLoss',
                     }
                     self.insert_fillable_pdf(
@@ -1961,10 +1586,8 @@ class Report:
                 # add hazard map
                 try:
                     gdf = self._Report__getHazardGeoDataFrame()
-                    #title = gdf.title
                     title = 'Water Depth (ft) - 100-year'
                     gdf = gdf[gdf['PARAMVALUE'] > 0.1]
-                    #map_colors = ['#e2edff', '#92c4de', '#3282be', '#083572'] # blues - BC
                     map_colors = ['#00FFFF', '#55AAFF', '#AA55FF', '#FF00FF'] # cool - BC
                     color_ramp = LinearSegmentedColormap.from_list(
                         'color_list', [
@@ -2006,7 +1629,8 @@ class Report:
                         field='PARAMVALUE',
                         formatTicks=False,
                         cmap=color_ramp,
-                        scheme='equalinterval'
+                        scheme='equalinterval',
+                        breaks=breaks
                     )
                 except:
                     print("Unexpected error:", sys.exc_info()[0])
@@ -2090,7 +1714,7 @@ class Report:
                 # get bulk of results
                 hurDataDictionary = {}
                 hurDataDictionary['title'] = self.title
-                hurDataDictionary['date'] = 'HAZUS Report Generated: {}'.format(
+                hurDataDictionary['date'] = 'Hazus Report Generated: {}'.format(
                     datetime.datetime.now().strftime('%m-%d-%Y').lstrip('0')
                 )
                 try:
@@ -2533,7 +2157,7 @@ class Report:
             if hazard == 'tsunami':
                 tsDataDictionary = {}
                 tsDataDictionary['title'] = self.title
-                tsDataDictionary['date'] = 'HAZUS Report Generated: {}'.format(
+                tsDataDictionary['date'] = 'Hazus Report Generated: {}'.format(
                     datetime.datetime.now().strftime('%m-%d-%Y').lstrip('0')
                 )
                 # get bulk of results
@@ -2591,13 +2215,13 @@ class Report:
                         economicResults, counties, how="inner", on=['countyfips']
                     )
                     economicLoss.drop(
-                        ['size', 'name', 'countyfips', 'geometry', 'crs'],
+                        ['size', 'countyfips', 'geometry', 'crs'],
                         axis=1,
                         inplace=True,
                     )
-                    economicLoss.columns = ['Block', 'EconLoss', 'State']
+                    economicLoss.columns = ['Block', 'EconLoss', 'CountyName', 'State']
                     economicLoss = (
-                        economicLoss.groupby(['Block', 'State'])['EconLoss']
+                        economicLoss.groupby(['Block', 'CountyName', 'State'])['EconLoss']
                         .sum()
                         .reset_index()
                     )
@@ -2615,7 +2239,8 @@ class Report:
                         for x in economicLoss['EconLoss']
                     ]
                     columns = {
-                        'econloss_county_': 'Block',
+                        'econloss_block_': 'Block',
+                        'econloss_county_': 'CountyName',
                         'econloss_state_': 'State',
                         'econloss_total_': 'EconLoss',
                     }
