@@ -3,8 +3,9 @@ from jenkspy import jenks_breaks as nb
 from matplotlib import pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap, Normalize
 from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
-from PyPDF2 import PdfFileReader, PdfFileWriter
+from PyPDF2 import PdfFileReader, PdfFileWriter, PdfFileMerger
 from PyPDF2.generic import BooleanObject, IndirectObject, NameObject, TextStringObject, DictionaryObject, NumberObject
+from reportlab.pdfgen import canvas
 from shapely.wkt import loads
 from uuid import uuid4 as uuid
 
@@ -12,6 +13,7 @@ import contextily as cx
 import datetime
 import fitz
 import geopandas as gpd
+import io
 import matplotlib.ticker as ticker
 import matplotlib.patheffects as pe
 import os
@@ -169,6 +171,34 @@ class Report:
                 dollars = '.'.join([dollarsSplit[0], dollarsSplit[1][0:1]])
         return dollars
 
+    # def addLegend(self, legend_file):
+    #     in_pdf_file = os.path.join(os.getcwd(), self._tempDirectory, self.hazard + '.pdf')
+    #     out_pdf_file = os.path.join(os.getcwd(), self._tempDirectory, 'legend.pdf')
+    #     img_file = os.path.join(os.getcwd(), self._tempDirectory, legend_file)
+    #     packet = io.BytesIO()
+    #     can = canvas.Canvas(packet)
+    #     x_start = 311.55
+    #     #y_start = 376
+    #     #y_start = 225
+    #     y_start = 358
+    #     width = 292
+    #     height = 39
+    #     can.drawImage(img_file, x_start, y_start, width=width, heigth=height, preserveAspectRatio=False, mask='auto')
+    #     can.save()
+    #     #move to the beginning of the StringIO buffer
+    #     packet.seek(0)
+    #     new_pdf = PdfFileReader(packet)
+    #     # read the existing PDF
+    #     existing_pdf = PdfFileReader(open(in_pdf_file, "rb"))
+    #     output = PdfFileWriter()
+    #     for i in range(len(existing_pdf.pages)):
+    #         page = existing_pdf.getPage(i)
+    #         page.mergePage(new_pdf.getPage(i))
+    #         output.addPage(page)
+    #     outputStream = open(out_pdf_file, "wb")
+    #     output.write(outputStream)
+    #     outputStream.close()
+
     def addTable(self, df, title, total, column):
         """Adds a table to the report
 
@@ -242,8 +272,7 @@ class Report:
         scheme=None,
         classification_kwds=None,
         norm=None,
-        boundary=True,
-        breaks=None
+        boundary=True
     ):
         """Adds a map to the report
 
@@ -349,26 +378,6 @@ class Report:
             # Add basemap
             cx.add_basemap(ax, source=cx.providers.Stamen.TonerLite, attribution=None, attribution_size=5, alpha=0.7)
 
-            # Create legend
-            # sm = plt.cm.ScalarMappable(
-            #     cmap=cmap,
-            #     norm=norm,
-            #     )
-            # sm._A = []
-            # formatTicks = True
-            # divider = make_axes_locatable(ax)
-            # cax = divider.append_axes("top", size="10%", pad="20%")
-            # cb = fig.colorbar(sm, cax=cax, orientation="horizontal")
-            # cb.outline.set_visible(False)
-            # if formatTicks == True:
-            #     cb.ax.xaxis.set_major_formatter(
-            #         ticker.FuncFormatter(
-            #             lambda x, p: self.addCommas(
-            #                 x, abbreviate=True, truncate=True
-            #             )
-            #         )
-            #     )
-
             fontsize = 3
             for idx in range(len(fig.axes)):
                 fig.axes[idx].tick_params(labelsize=fontsize, size=fontsize)
@@ -387,34 +396,6 @@ class Report:
                 bbox_inches='tight',
                 dpi=600,
             )
-            
-            # Create legend & export as separate PNG
-    #         sm = plt.cm.ScalarMappable(
-    #             cmap=cmap,
-    #             #norm=None,
-    #             )
-    #         sm._A = []
-    # #        formatTicks = True
-    #         divider = make_axes_locatable(ax)
-    #         cax = divider.append_axes("top", size="10%", pad="20%")
-    #         cb = fig.colorbar(sm, cax=cax, orientation="horizontal", ticks=breaks)
-    #         cb.outline.set_visible(False)
-    #         cb.ax.set_xticklabels(breaks)
-            # if formatTicks == True:
-            #     cb.ax.xaxis.set_major_formatter(
-            #         ticker.FuncFormatter(
-            #             lambda x, p: self.addCommas(
-            #                 x, abbreviate=False, truncate=False
-            #             )
-            #         )
-            #     )
-            # ax.remove()
-            # legend_file = os.getcwd() + '/' + self._tempDirectory + '/legend-' + str(uuid()) + ".png"
-            # plt.savefig(
-            #     legend_file,
-            #     bbox_inches='tight',
-            #     dpi=600,
-            # )
             fig.clf()
             plt.clf()
 
@@ -470,7 +451,7 @@ class Report:
                     x2 = 594
                     y2 = 640
             try:
-                self.insert_image_to_pdf(src, title, x1, y1, x2, y2)
+                self.insert_image_to_pdf(src, x1, y1, x2, y2)
             except:
                 print("Unexpected error:", sys.exc_info()[0])
                 pass
@@ -557,21 +538,19 @@ class Report:
             if self.hazard == 'tsunami':
                 if title == 'Building Damage By Occupancy':
                     x1 = 19
-                    #y1 = 116
                     y1 = 112
                     x2 = 297
-                    #y2 = 228
                     y2 = 234
 
             if self.hazard != 'earthquake':
-                self.insert_image_to_pdf(src, title, x1, y1, x2, y2)
+                self.insert_image_to_pdf(src, x1, y1, x2, y2)
 
         except:
             print("Unexpected error:", sys.exc_info()[0])
             plt.clf()
             raise
 
-    def save(self, path, deleteTemp=True, openFile=False, premade=None):
+    def save(self, path, deleteTemp=True, openFile=True, premade=None):
         """Creates a PDF of the report
 
         Keyword Arguments: \n
@@ -617,7 +596,7 @@ class Report:
                 shutil.rmtree(os.getcwd() + '/' + self._tempDirectory)
             raise
 
-    def insert_image_to_pdf(self, src, title, x1, y1, x2, y2):
+    def insert_image_to_pdf(self, src, x1, y1, x2, y2):
         """Insert image (map/histogram) into fillable PDF
 
         Args:
@@ -739,7 +718,7 @@ class Report:
 
         return writer
 
-    def write_fillable_pdf(self, data_dict, path, openFile=True):
+    def write_fillable_pdf(self, data_dict, path, openFile=False):
         """Insert data into fillable PDF
 
         Args:
@@ -975,6 +954,9 @@ class Report:
                         'econloss_total_': 'EconLoss',
                     }
                     eqDataDictionary['total_econloss'] = '$' + total
+                    # Populate total count
+                    eqDataDictionary['econ_loss_count'] = f"({self.abbreviate(len(economicResults.index)).replace(' ', '')} Tracts with Losses)"
+                    #eqDataDictionary['econ_loss_count'] = f"({self.abbreviate(len(economicResults.index)).replace(' ', '')} Tracts)"
                     self.insert_fillable_pdf(
                         economicLoss, eqDataDictionary, columns)
                     #  'total_econloss': total - Add to table
@@ -1210,6 +1192,7 @@ class Report:
                         column='right',
                         field='EconLoss',
                         cmap=color_ramp,
+                        scheme='NaturalBreaks'
                     )
                 except:
                     print("Unexpected error:", sys.exc_info()[0])
@@ -1234,6 +1217,7 @@ class Report:
                         '#ff0000',
                         '#800000',
                     ]
+
                     color_ramp = LinearSegmentedColormap.from_list(
                         'color_list', [
                             Color(color).rgb for color in map_colors]
@@ -1241,19 +1225,28 @@ class Report:
                     # Are these PGV values? - BC
                     # TODO: Review if these are PGV or PGA values --> talk with Doug
                     # TODO: Are there any conversions needed?
+                    # bins = [
+                    #     0.002,
+                    #     0.014,
+                    #     0.039,
+                    #     0.092,
+                    #     0.180,
+                    #     0.340,
+                    #     0.650,
+                    #     1.240,
+                    #     3.000
+                    # ]
                     bins = [
-                        0.002,
-                        0.014,
-                        0.039,
-                        0.092,
-                        0.180,
-                        0.340,
-                        0.650,
-                        1.240,
-                        3.000,
-                        1000,
+                        .0016,
+                        .0139,
+                        .0389,
+                        .0919,
+                        .1799,
+                        .3399,
+                        .6499,
+                        1.2399
                     ]
-                    scheme = 'userdefined'
+                    scheme = 'UserDefined'
                     classification_kwds = {'bins': bins}
                     self.addMap(
                         gdf,
@@ -1264,7 +1257,7 @@ class Report:
                         cmap=color_ramp,
                         scheme=scheme,
                         classification_kwds=classification_kwds,
-                        norm=Normalize(0, len(bins)),
+                        #norm=Normalize(0, len(bins)),
                     )
                 except:
                     print("Unexpected error:", sys.exc_info()[0])
@@ -1413,6 +1406,7 @@ class Report:
                         'econloss_state_': 'State',
                         'econloss_total_': 'EconomicLoss',
                     }
+                    floodDataDictionary['econ_loss_count'] = f"({self.abbreviate(len(economicResults.index)).replace(' ', '')} Blocks with Losses)"
                     self.insert_fillable_pdf(
                         economicLoss, floodDataDictionary, columns)
                     floodDataDictionary['total_econloss'] = '$' + total
@@ -1575,7 +1569,7 @@ class Report:
                         column='right',
                         field='EconLoss',
                         cmap=color_ramp,
-                        scheme='equalinterval',
+                        scheme='NaturalBreaks',
                     )
                 except:
                     print("Unexpected error:", sys.exc_info()[0])
@@ -1595,33 +1589,36 @@ class Report:
                     )
                     # convert to GeoDataFrame
                #     breaks = nb(gdf['PARAMVALUE'], nb_class=4)
-                    breaks = self.equal_interval(
-                        gdf['PARAMVALUE'].to_list(), 4)
-                    legend_item1 = breaks[0]
-                    legend_item2 = breaks[1]
-                    legend_item3 = breaks[2]
-                    legend_item4 = breaks[3]
-                    legend_item5 = breaks[4]
-                    floodDataDictionary['wd_legend_1'] = (
-                        self.abbreviate(legend_item1)
-                        + '-'
-                        + self.abbreviate(legend_item2)
-                    )
-                    floodDataDictionary['wd_legend_2'] = (
-                        self.abbreviate(legend_item2)
-                        + '-'
-                        + self.abbreviate(legend_item3)
-                    )
-                    floodDataDictionary['wd_legend_3'] = (
-                        self.abbreviate(legend_item3)
-                        + '-'
-                        + self.abbreviate(legend_item4)
-                    )
-                    floodDataDictionary['wd_legend_4'] = (
-                        self.abbreviate(legend_item4)
-                        + '-'
-                        + self.abbreviate(legend_item5)
-                    )
+                    # breaks = self.equal_interval(
+                    #     gdf['PARAMVALUE'].to_list(), 4)
+                    # legend_item1 = breaks[0]
+                    # legend_item2 = breaks[1]
+                    # legend_item3 = breaks[2]
+                    # legend_item4 = breaks[3]
+                    # legend_item5 = breaks[4]
+                    # floodDataDictionary['wd_legend_1'] = (
+                    #     self.abbreviate(legend_item1)
+                    #     + '-'
+                    #     + self.abbreviate(legend_item2)
+                    # )
+                    # floodDataDictionary['wd_legend_2'] = (
+                    #     self.abbreviate(legend_item2)
+                    #     + '-'
+                    #     + self.abbreviate(legend_item3)
+                    # )
+                    # floodDataDictionary['wd_legend_3'] = (
+                    #     self.abbreviate(legend_item3)
+                    #     + '-'
+                    #     + self.abbreviate(legend_item4)
+                    # )
+                    # floodDataDictionary['wd_legend_4'] = (
+                    #     self.abbreviate(legend_item4)
+                    #     + '-'
+                    #     + self.abbreviate(legend_item5)
+                    # )
+                    gdf = gdf.astype({'PARAMVALUE': 'int'})
+                    floodDataDictionary['wd_legend_min'] = gdf['PARAMVALUE'].min()
+                    floodDataDictionary['wd_legend_max'] = gdf['PARAMVALUE'].max()
                     self.addMap(
                         gdf,
                         title=title,
@@ -1629,8 +1626,7 @@ class Report:
                         field='PARAMVALUE',
                         formatTicks=False,
                         cmap=color_ramp,
-                        scheme='equalinterval',
-                        breaks=breaks
+                        #scheme='equalinterval',
                     )
                 except:
                     print("Unexpected error:", sys.exc_info()[0])
@@ -1666,8 +1662,8 @@ class Report:
                         results['FoundationTonsTotal'].sum() / tonsToTruckLoadsCoef,
                         abbreviate=True,
                     )
+
                     # populate totals
-                    
                     totalTons = tons
                     totalTruckLoads = truckLoads
                     total = totalTons + ' Tons/' + totalTruckLoads + ' Truck Loads'
@@ -1801,6 +1797,8 @@ class Report:
                         'econloss_state_': 'State',
                         'econloss_total_': 'EconLoss',
                     }
+                    hurDataDictionary['econ_loss_count'] = f"({self.abbreviate(len(economicResults.index)).replace(' ', '')} Tracts with Losses)"
+                    #hurDataDictionary['econ_loss_count'] = f"({self.abbreviate(len(economicResults.index)).replace(' ', '')} Tracts)"
                     self.insert_fillable_pdf(
                         economicLoss, hurDataDictionary, columns)
                     hurDataDictionary['total_econloss'] = '$' + total
@@ -1980,6 +1978,7 @@ class Report:
                         column='right',
                         field='EconLoss',
                         cmap=color_ramp,
+                        scheme='NaturalBreaks'
                     )
                 except:
                     print("Unexpected error:", sys.exc_info()[0])
@@ -2036,21 +2035,13 @@ class Report:
                         + '-'
                         + self.abbreviate(legend_item7)
                     )
-                    map_colors = [
-                        '#00faf4',
-                        '#ffffcc',
-                        '#ffe775',
-                        '#ffc140',
-                        '#ff8f20',
-                        '#ff6060',
-                    ]
+                    map_colors = ['#4575b4', '#91bfdb', '#e0f3f8', '#fee090', '#fc8d59', '#d73027']
                     color_ramp = LinearSegmentedColormap.from_list(
                         'color_list', [
                             Color(color).rgb for color in map_colors]
                     )
-                    # scheme = 'userdefined'
-                    # bins = [50, 94, 142, 166, 200, 500]
-                    # classification_kwds = {'bins': bins}
+                    bins = [round(bin) for bin in breaks[1:6]]
+                    classification_kwds = {'bins': bins}
                     # self.addMap(
                     #     gdf,
                     #     title=title,
@@ -2069,6 +2060,8 @@ class Report:
                         field='PARAMVALUE',
                         formatTicks=False,
                         cmap=color_ramp,
+                        scheme='UserDefined',
+                        classification_kwds=classification_kwds,
                     )
                 except:
                     print("Unexpected error:", sys.exc_info()[0])
@@ -2244,6 +2237,7 @@ class Report:
                         'econloss_state_': 'State',
                         'econloss_total_': 'EconLoss',
                     }
+                    tsDataDictionary['econ_loss_count'] = f"({self.abbreviate(len(economicResults.index)).replace(' ', '')} Blocks with Losses)"
                     self.insert_fillable_pdf(
                         economicLoss, tsDataDictionary, columns)
                     tsDataDictionary['total_econloss'] = '$' + str(total)
@@ -2445,7 +2439,7 @@ class Report:
                         column='right',
                         field='EconLoss',
                         cmap=color_ramp,
-                        scheme='equalinterval',
+                        scheme='NaturalBreaks',
                     )
                 except:
                     print("Unexpected error:", sys.exc_info()[0])
@@ -2459,40 +2453,15 @@ class Report:
                     gdf = self._Report__getHazardGeoDataFrame()
                     title = gdf.title
                     gdf = gdf[gdf['PARAMVALUE'] > 0.1]
+                    gdf = gdf.astype({'PARAMVALUE': 'int'})
                     #map_colors = ['#e2edff', '#92c4de', '#3282be', '#083572']
                     map_colors = ['#00FFFF', '#55AAFF', '#AA55FF', '#FF00FF']
                     color_ramp = LinearSegmentedColormap.from_list(
                         'color_list', [
                             Color(color).rgb for color in map_colors]
                     )
-                    # breaks = nb(gdf['PARAMVALUE'], nb_class=4)
-                    breaks = self.equal_interval(
-                        gdf['PARAMVALUE'].to_list(), 4)
-                    legend_item1 = breaks[0]
-                    legend_item2 = breaks[1]
-                    legend_item3 = breaks[2]
-                    legend_item4 = breaks[3]
-                    legend_item5 = breaks[4]
-                    tsDataDictionary['wd_legend_1'] = (
-                        self.abbreviate(legend_item1)
-                        + ' - '
-                        + self.abbreviate(legend_item2)
-                    )
-                    tsDataDictionary['wd_legend_2'] = (
-                        self.abbreviate(legend_item2)
-                        + ' - '
-                        + self.abbreviate(legend_item3)
-                    )
-                    tsDataDictionary['wd_legend_3'] = (
-                        self.abbreviate(legend_item3)
-                        + ' - '
-                        + self.abbreviate(legend_item4)
-                    )
-                    tsDataDictionary['wd_legend_4'] = (
-                        self.abbreviate(legend_item4)
-                        + ' - '
-                        + self.abbreviate(legend_item5)
-                    )
+                    tsDataDictionary['wd_legend_min'] = gdf['PARAMVALUE'].min()
+                    tsDataDictionary['wd_legend_max'] = gdf['PARAMVALUE'].max()
                     self.addMap(
                         gdf,
                         title='Water Depth (ft)',
@@ -2500,7 +2469,6 @@ class Report:
                         field='PARAMVALUE',
                         formatTicks=False,
                         cmap=color_ramp,
-                        scheme='equalinterval',
                         boundary=False
                     )
                 except:
@@ -2532,8 +2500,6 @@ class Report:
                     )
 
                     breaks = nb(travelTimeToSafety['travelTimeOver65yo'], nb_class=8)
-                    # breaks = self.equal_interval(
-                    #     travelTimeToSafety['travelTimeOver65yo'].to_list(), 7)
                     tt_legend0 = breaks[0]
                     tt_legend1 = breaks[1]
                     tt_legend2 = breaks[2]
@@ -2583,8 +2549,8 @@ class Report:
                         + ' - '
                         + self.abbreviate(tt_legend8)
                     )
-
-                    #classification_kwds = {'bins': bins}
+                    bins = [round(bin) for bin in breaks[1:8]]
+                    classification_kwds = {'bins': bins}
                     self.addMap(
                         travelTimeToSafety,
                         title=title,
@@ -2592,8 +2558,8 @@ class Report:
                         field='travelTimeOver65yo',
                         formatTicks=False,
                         cmap=color_ramp,
-                        scheme='equalinterval'
-                        #classification_kwds=classification_kwds,
+                        scheme='UserDefined',
+                        classification_kwds=classification_kwds,
                         #norm=Normalize(0, len(bins))
                     )
                 except:
