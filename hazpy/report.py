@@ -100,7 +100,11 @@ class Report:
         while abs(num) >= 1000:
             magnitude += 1
             num /= 1000.0
-        return '{}{}'.format('{:f}'.format(num).rstrip('0').rstrip('.'), ['', 'K', 'M', 'B', 'T'][magnitude])
+        if self.hazard == 'flood':
+            formatted_number = '${}{}'.format('{:f}'.format(num).rstrip('0').rstrip('.'), ['', 'K', 'M', 'B', 'T'][magnitude])
+        else:
+            formatted_number = '{}{}'.format('{:f}'.format(num).rstrip('0').rstrip('.'), ['', 'K', 'M', 'B', 'T'][magnitude])
+        return formatted_number
 
     # def format_tick(self, num, pos):
     #     millnames = ['',' K',' M',' B',' T']
