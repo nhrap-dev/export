@@ -78,18 +78,29 @@ class Report:
         self.getStates = studyRegionClass.getStates
         self._tempDirectory = 'hazpy-report-temp'
 
+    # def format_tick(self, num, pos):
+    #     magnitude = 0
+    #     while abs(num) >= 1000:
+    #         magnitude += 1
+    #         num /= 1000.0
+    #     # add more suffixes if you need them
+    #     if self.hazard == 'flood' or self.hazard == 'tsunami':
+    #         #return '$%.0f%s' % (num, ['', ' K', ' M', ' B', ' T'][magnitude])
+    #         if '.00' in str(num):
+    #             return '$%.0f%s' % (num, ['', ' K', ' M', ' B', ' T'][magnitude])
+    #         else:
+    #             return '$%.2f%s' % (num, ['', ' K', ' M', ' B', ' T'][magnitude])
+    #     else:
+    #         return '%.0f%s' % (num, ['', ' K', ' M', ' B', ' T'][magnitude])
+    #         #return '%.2f%s' % (num, ['', ' K', ' M', ' B', ' T'][magnitude])
+
     def format_tick(self, num, pos):
+        num = float('{:.3g}'.format(num))
         magnitude = 0
         while abs(num) >= 1000:
             magnitude += 1
             num /= 1000.0
-        # add more suffixes if you need them
-        if self.hazard == 'flood':
-            return '$%.0f%s' % (num, ['', ' K', ' M', ' B', ' T'][magnitude])
-            #return '$%.2f%s' % (num, ['', ' K', ' M', ' B', ' T'][magnitude])
-        else:
-            return '%.0f%s' % (num, ['', ' K', ' M', ' B', ' T'][magnitude])
-            #return '%.2f%s' % (num, ['', ' K', ' M', ' B', ' T'][magnitude])
+        return '{}{}'.format('{:f}'.format(num).rstrip('0').rstrip('.'), ['', 'K', 'M', 'B', 'T'][magnitude])
 
     # def format_tick(self, num, pos):
     #     millnames = ['',' K',' M',' B',' T']
@@ -170,34 +181,6 @@ class Report:
             if len(dollarsSplit) > 1:
                 dollars = '.'.join([dollarsSplit[0], dollarsSplit[1][0:1]])
         return dollars
-
-    # def addLegend(self, legend_file):
-    #     in_pdf_file = os.path.join(os.getcwd(), self._tempDirectory, self.hazard + '.pdf')
-    #     out_pdf_file = os.path.join(os.getcwd(), self._tempDirectory, 'legend.pdf')
-    #     img_file = os.path.join(os.getcwd(), self._tempDirectory, legend_file)
-    #     packet = io.BytesIO()
-    #     can = canvas.Canvas(packet)
-    #     x_start = 311.55
-    #     #y_start = 376
-    #     #y_start = 225
-    #     y_start = 358
-    #     width = 292
-    #     height = 39
-    #     can.drawImage(img_file, x_start, y_start, width=width, heigth=height, preserveAspectRatio=False, mask='auto')
-    #     can.save()
-    #     #move to the beginning of the StringIO buffer
-    #     packet.seek(0)
-    #     new_pdf = PdfFileReader(packet)
-    #     # read the existing PDF
-    #     existing_pdf = PdfFileReader(open(in_pdf_file, "rb"))
-    #     output = PdfFileWriter()
-    #     for i in range(len(existing_pdf.pages)):
-    #         page = existing_pdf.getPage(i)
-    #         page.mergePage(new_pdf.getPage(i))
-    #         output.addPage(page)
-    #     outputStream = open(out_pdf_file, "wb")
-    #     output.write(outputStream)
-    #     outputStream.close()
 
     def addTable(self, df, title, total, column):
         """Adds a table to the report
@@ -499,6 +482,7 @@ class Report:
             plt.legend(title='', fontsize=8)
             plt.xticks(fontsize=8)
             plt.yticks(fontsize=8)
+            tick_locs=ax.yaxis.get_majorticklocs()  
             # TODO: Review fmt (formatting) - BC
             fmt = '{x:,.0f}'
             #tick = ticker.StrMethodFormatter(fmt)
