@@ -272,7 +272,8 @@ class Report:
         scheme=None,
         classification_kwds=None,
         norm=None,
-        boundary=True
+        boundary=True,
+        k=None
     ):
         """Adds a map to the report
 
@@ -956,7 +957,6 @@ class Report:
                     eqDataDictionary['total_econloss'] = '$' + total
                     # Populate total count
                     eqDataDictionary['econ_loss_count'] = f"({self.abbreviate(len(economicResults.index)).replace(' ', '')} Tracts with Losses)"
-                    #eqDataDictionary['econ_loss_count'] = f"({self.abbreviate(len(economicResults.index)).replace(' ', '')} Tracts)"
                     self.insert_fillable_pdf(
                         economicLoss, eqDataDictionary, columns)
                     #  'total_econloss': total - Add to table
@@ -1192,7 +1192,8 @@ class Report:
                         column='right',
                         field='EconLoss',
                         cmap=color_ramp,
-                        scheme='NaturalBreaks'
+                        scheme='NaturalBreaks',
+                        k=4
                     )
                 except:
                     print("Unexpected error:", sys.exc_info()[0])
@@ -1236,17 +1237,27 @@ class Report:
                     #     1.240,
                     #     3.000
                     # ]
+                    # bins = [
+                    #     .0016,
+                    #     .0139,
+                    #     .0389,
+                    #     .0919,
+                    #     .1799,
+                    #     .3399,
+                    #     .6499,
+                    #     1.2399
+                    # ]
                     bins = [
-                        .0016,
-                        .0139,
-                        .0389,
-                        .0919,
-                        .1799,
-                        .3399,
-                        .6499,
-                        1.2399
+                        .0017,
+                        .0140,
+                        .0390,
+                        .0920,
+                        .1800,
+                        .3400,
+                        .6500,
+                        1.24
                     ]
-                    scheme = 'UserDefined'
+
                     classification_kwds = {'bins': bins}
                     self.addMap(
                         gdf,
@@ -1255,9 +1266,9 @@ class Report:
                         field='PARAMVALUE',
                         formatTicks=False,
                         cmap=color_ramp,
-                        scheme=scheme,
+                        scheme='UserDefined',
                         classification_kwds=classification_kwds,
-                        #norm=Normalize(0, len(bins)),
+                        norm=Normalize(0, len(bins)),
                     )
                 except:
                     print("Unexpected error:", sys.exc_info()[0])
@@ -1570,6 +1581,7 @@ class Report:
                         field='EconLoss',
                         cmap=color_ramp,
                         scheme='NaturalBreaks',
+                        k=4
                     )
                 except:
                     print("Unexpected error:", sys.exc_info()[0])
@@ -1626,7 +1638,6 @@ class Report:
                         field='PARAMVALUE',
                         formatTicks=False,
                         cmap=color_ramp,
-                        #scheme='equalinterval',
                     )
                 except:
                     print("Unexpected error:", sys.exc_info()[0])
@@ -1978,7 +1989,8 @@ class Report:
                         column='right',
                         field='EconLoss',
                         cmap=color_ramp,
-                        scheme='NaturalBreaks'
+                        scheme='NaturalBreaks',
+                        k=4
                     )
                 except:
                     print("Unexpected error:", sys.exc_info()[0])
@@ -2440,6 +2452,7 @@ class Report:
                         field='EconLoss',
                         cmap=color_ramp,
                         scheme='NaturalBreaks',
+                        k=4
                     )
                 except:
                     print("Unexpected error:", sys.exc_info()[0])
