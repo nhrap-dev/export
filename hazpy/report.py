@@ -78,22 +78,6 @@ class Report:
         self.getStates = studyRegionClass.getStates
         self._tempDirectory = 'hazpy-report-temp'
 
-    # def format_tick(self, num, pos):
-    #     magnitude = 0
-    #     while abs(num) >= 1000:
-    #         magnitude += 1
-    #         num /= 1000.0
-    #     # add more suffixes if you need them
-    #     if self.hazard == 'flood' or self.hazard == 'tsunami':
-    #         #return '$%.0f%s' % (num, ['', ' K', ' M', ' B', ' T'][magnitude])
-    #         if '.00' in str(num):
-    #             return '$%.0f%s' % (num, ['', ' K', ' M', ' B', ' T'][magnitude])
-    #         else:
-    #             return '$%.2f%s' % (num, ['', ' K', ' M', ' B', ' T'][magnitude])
-    #     else:
-    #         return '%.0f%s' % (num, ['', ' K', ' M', ' B', ' T'][magnitude])
-    #         #return '%.2f%s' % (num, ['', ' K', ' M', ' B', ' T'][magnitude])
-
     def format_tick(self, num, pos):
         num = float('{:.3g}'.format(num))
         magnitude = 0
@@ -106,12 +90,6 @@ class Report:
             formatted_number = '{}{}'.format('{:f}'.format(num).rstrip('0').rstrip('.'), ['', 'K', 'M', 'B', 'T'][magnitude])
         return formatted_number
 
-    # def format_tick(self, num, pos):
-    #     millnames = ['',' K',' M',' B',' T']
-    #     n = float(num)
-    #     millidx = max(0,min(len(millnames)-1,
-    #                         int(math.floor(0 if n == 0 else math.log10(abs(n))/3))))
-    #     return '{:.0f}{}'.format(n / 10**(3 * millidx), millnames[millidx])
 
     def abbreviate(self, number):
         """[summary]
@@ -1991,68 +1969,71 @@ class Report:
                 try:
                     gdf = self._Report__getHazardGeoDataFrame()
                     title = 'Historic Wind Speeds (mph)'
-                    # limit the extent
-                    gdf = gdf[gdf['PARAMVALUE'] > 0.1]
-                  # Natural Breaks
-                   # breaks = nb(gdf['PARAMVALUE'], nb_class=6)
-                  # Equal Interval
-                    breaks = self.equal_interval(
-                        gdf['PARAMVALUE'].to_list(), 6)
-                    legend_item1 = breaks[0]
-                    legend_item2 = breaks[1]
-                    legend_item3 = breaks[2]
-                    legend_item4 = breaks[3]
-                    legend_item5 = breaks[4]
-                    legend_item6 = breaks[5]
-                    legend_item7 = breaks[6]
-                    hurDataDictionary['peak_gust_legend_1'] = (
-                        self.abbreviate(legend_item1)
-                        + '-'
-                        + self.abbreviate(legend_item2)
-                    )
-                    hurDataDictionary['peak_gust_legend_2'] = (
-                        self.abbreviate(legend_item2)
-                        + '-'
-                        + self.abbreviate(legend_item3)
-                    )
-                    hurDataDictionary['peak_gust_legend_3'] = (
-                        self.abbreviate(legend_item3)
-                        + '-'
-                        + self.abbreviate(legend_item4)
-                    )
-                    hurDataDictionary['peak_gust_legend_4'] = (
-                        self.abbreviate(legend_item4)
-                        + '-'
-                        + self.abbreviate(legend_item5)
-                    )
-                    hurDataDictionary['peak_gust_legend_5'] = (
-                        self.abbreviate(legend_item5)
-                        + '-'
-                        + self.abbreviate(legend_item6)
-                    )
-                    hurDataDictionary['peak_gust_legend_6'] = (
-                        self.abbreviate(legend_item6)
-                        + '-'
-                        + self.abbreviate(legend_item7)
-                    )
+                    
+                    # TODO: Verify if we want a static or dynamic legend - BC
+                    max_wind = gdf['PARAMVALUE'].max()
+
                     map_colors = ['#4575b4', '#91bfdb', '#e0f3f8', '#fee090', '#fc8d59', '#d73027']
+                    bins = [
+                        75,
+                        98,
+                        122,
+                        145,
+                        169
+                    ]
+                    if max_wind < 122:
+                        map_colors = map_colors[0:3]
+                        bins = [
+                            75,
+                            98
+                        ]
+                        bins = bins[0:2]
+                    elif max_wind < 145:
+                        map_colors = map_colors[0:4]
+                        bins = bins[0:3]
+
+                #     legend_item1 = 50
+                #     legend_item2 = bins[0]
+                #     legend_item3 = bins[1]
+                #     legend_item4 = bins[2]
+                #     legend_item5 = bins[3]
+                #     legend_item6 = bins[4]
+                #     legend_item7 = "169+"
+
+                #     hurDataDictionary['peak_gust_legend_1'] = (
+                #         self.abbreviate(legend_item1)
+                #         + '-'
+                #         + self.abbreviate(legend_item2)
+                #     )
+                #     hurDataDictionary['peak_gust_legend_2'] = (
+                #         self.abbreviate(legend_item2)
+                #         + '-'
+                #         + self.abbreviate(legend_item3)
+                #     )
+                #     hurDataDictionary['peak_gust_legend_3'] = (
+                #         self.abbreviate(legend_item3)
+                #         + '-'
+                #         + self.abbreviate(legend_item4)
+                #     )
+                #     hurDataDictionary['peak_gust_legend_4'] = (
+                #         self.abbreviate(legend_item4)
+                #         + '-'
+                #         + self.abbreviate(legend_item5)
+                #     )
+                #     hurDataDictionary['peak_gust_legend_5'] = (
+                #         self.abbreviate(legend_item5)
+                #         + '-'
+                #         + self.abbreviate(legend_item6)
+                #     )
+                #     hurDataDictionary['peak_gust_legend_6'] = (
+                #          self.abbreviate(legend_item7)
+                #    )
                     color_ramp = LinearSegmentedColormap.from_list(
                         'color_list', [
                             Color(color).rgb for color in map_colors]
                     )
-                    bins = [round(bin) for bin in breaks[1:6]]
+                    #bins = [round(bin) for bin in breaks]
                     classification_kwds = {'bins': bins}
-                    # self.addMap(
-                    #     gdf,
-                    #     title=title,
-                    #     column='right',
-                    #     field='PARAMVALUE',
-                    #     formatTicks=False,
-                    #     cmap=color_ramp,
-                    #     scheme=scheme,
-                    #     classification_kwds=classification_kwds,
-                    #     norm=Normalize(0, len(bins)),
-                    # )
                     self.addMap(
                         gdf,
                         title=title,
@@ -2061,9 +2042,16 @@ class Report:
                         formatTicks=False,
                         cmap=color_ramp,
                         scheme='UserDefined',
-                        classification_kwds=classification_kwds,
+                        classification_kwds=classification_kwds
                     )
-                except:
+                except Exception as e:
+                    print('\n')
+                    print(e)
+                    exc_type, exc_obj, exc_tb = sys.exc_info()
+                    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                    print(fname)
+                    print(exc_type, exc_tb.tb_lineno)
+                    print('\n')
                     print("Unexpected error:", sys.exc_info()[0])
                     pass
                 ###################################
