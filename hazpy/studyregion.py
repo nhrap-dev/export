@@ -71,6 +71,7 @@ class StudyRegion:
     def setScenario(self, scenario=None):
         # validate scenario
         scenarios = self.getScenarios()
+        #[print(i) for i in scenarios] #TODO: Remove this - BC
         if scenario == None and len(scenarios) == 1:
             self.scenario = scenarios[0]
         elif scenario == None and len(scenarios) > 1:
@@ -588,7 +589,8 @@ class StudyRegion:
                 "earthquake": """select Tract as tract, SUM(DisplacedHouseholds) as DisplacedHouseholds from {s}.dbo.eqTract group by Tract""".format(
                     s=self.name
                 ),
-                "flood": """select CensusBlock as block, SUM(DisplacedPop) as DisplacedHouseholds from {s}.dbo.flFRShelter
+                # TODO: Confirm if this is displaced household, and not displaced population (for the summation) - BC
+                "flood": """select CensusBlock as block, SUM(DisplacedPop) as DisplacedPopulation from {s}.dbo.flFRShelter
                     where StudyCaseId = (select StudyCaseID from {s}.[dbo].[flStudyCase] where StudyCaseName = '{sc}')
                     and ReturnPeriodId = '{rp}'
                     group by CensusBlock""".format(
@@ -942,14 +944,14 @@ class StudyRegion:
                         # Historic
                         "Historic Wind Speeds (mph)": {
                             "returnPeriod": "0",
-                            "path": "SELECT Tract as tract, PeakGust * 1.275 as PARAMVALUE FROM {s}.[dbo].[hv_huHistoricWindSpeedT] WHERE PeakGust {o} 0 AND huScenarioName = '{sc}'".format(
+                            "path": "SELECT Tract as tract, PeakGust * 1.275 as PARAMVALUE FROM {s}.[dbo].[hv_huHistoricWindSpeedT] WHERE PeakGust {o} 50 AND huScenarioName = '{sc}'".format(
                                 s=self.name, sc=self.scenario, o=operator
                             ),
                         },
                         # Deterministic
                         "Wind Speeds (mph)": {
                             "returnPeriod": "0",
-                            "path": "SELECT Tract as tract, PeakGust as PARAMVALUE FROM {s}.[dbo].[hv_huDeterminsticWindSpeedResults] WHERE PeakGust {o} 0 AND huScenarioName = '{sc}'".format(
+                            "path": "SELECT Tract as tract, PeakGust as PARAMVALUE FROM {s}.[dbo].[hv_huDeterminsticWindSpeedResults] WHERE PeakGust {o} 50 AND huScenarioName = '{sc}'".format(
                                 s=self.name, sc=self.scenario, o=operator
                             ),
                         },

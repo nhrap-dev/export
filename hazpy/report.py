@@ -90,7 +90,7 @@ class Report:
             formatted_number = '{}{}'.format('{:f}'.format(num).rstrip('0').rstrip('.'), ['', 'K', 'M', 'B', 'T'][magnitude])
         return formatted_number
 
-
+# TODO: Remove/replace/refactor with format_tick?? - BC 
     def abbreviate(self, number):
         """[summary]
 
@@ -497,7 +497,7 @@ class Report:
                     y2 = 250
                 if (
                     title == 'Damaged Essential Facilities'
-                ):  # TODO: Add ticks to side of chart - BC
+                ):
                     x1 = 19
                     y1 = 434
                     x2 = 297
@@ -1426,7 +1426,7 @@ class Report:
                 try:
                     counties = self.getCounties()
                     displacedAndShelterResults = results[
-                        ['block', 'DisplacedHouseholds', 'ShelterNeeds']
+                        ['block', 'DisplacedPopulation', 'ShelterNeeds']
                     ]
                     displacedAndShelterResults[
                         'countyfips'
@@ -1444,12 +1444,12 @@ class Report:
                     )
                     displacedAndShelter.columns = [
                         'TopBlocks',
-                        'DisplacedHouseholds',
+                        'DisplacedPopulation',
                         'PeopleNeedingShelter',
                     ]
                     # populate totals
                     totalDisplaced = self.addCommas(
-                        displacedAndShelter['DisplacedHouseholds'].sum(),
+                        displacedAndShelter['DisplacedPopulation'].sum(),
                         abbreviate=True,
                     )
                     totalShelter = self.addCommas(
@@ -1464,7 +1464,7 @@ class Report:
                     )
                     # limit rows to the highest values
                     displacedAndShelter = displacedAndShelter.sort_values(
-                        'DisplacedHouseholds', ascending=False
+                        'DisplacedPopulation', ascending=False
                     )[0:tableRowLimit]
                     # format values
                     for column in displacedAndShelter:
@@ -1475,7 +1475,7 @@ class Report:
                             ]
                     columns = {
                         'shelter_county_': 'TopBlocks',
-                        'shelter_house_': 'DisplacedHouseholds',
+                        'shelter_house_': 'DisplacedPopulation',
                         'shelter_need_': 'PeopleNeedingShelter',
                     }
                     self.insert_fillable_pdf(
