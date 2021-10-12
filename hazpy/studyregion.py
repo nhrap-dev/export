@@ -951,7 +951,7 @@ class StudyRegion:
 
         try:
             if self.hazard == "earthquake":
-                sql = f"SELECT [Scenarioname] as scenarios FROM [{self.dbName}].[dbo].[eqShakeMapScenario2]"
+                sql = f"SELECT [Scenarioname] as scenarios FROM [{self.dbName}].[dbo].[eqShakeMapScenario]"
                 sql_fallback = f"SELECT [EqScenarioname] as scenarios FROM [{self.dbName}].[dbo].[RgnExpeqScenario]"
 
             # flood can have many scenarios
