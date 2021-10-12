@@ -82,7 +82,7 @@ class StudyRegion:
                 os.path.join(Path(__file__).parent, "connectionStrings.json")
                 "./connectionStrings.json"
         """
-        with open("./connectionStrings.json") as f:
+        with open("./src/connectionStrings.json") as f:
             connectionStrings = json.load(f)
             connectionString = connectionStrings[stringName]
         return connectionString
@@ -112,15 +112,15 @@ class StudyRegion:
                 # create connection with the latest driver
                 for driver in drivers:
                     try:
-                        conn = py.connect(self.getConnectionString('pyodbc').format(d=driver,cn=computer_name))
+                        conn = py.connect(self.getConnectionString('pyodbc').format(d=driver, cn=computer_name))
                         break
                     except:
-                        continue
+                        conn = py.connect(self.getConnectionString('pyodbc_auth').format(d=driver, cn=computer_name))
+                        break
             return conn
         except:
-            print("Unexpected error:", sys.exc_info()[0])
+            print("Unexpected error creating the database connection:", sys.exc_info()[0])
             raise
-
 
 
     def query(self, sql):

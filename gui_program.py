@@ -436,7 +436,7 @@ class App:
             ):
                 if self.value_scenario.get() is None:
                     value = self.dropdown_scenario.get()
-                    if len(value) > 0:     
+                    if len(value) > 0:
                         self.studyRegion.setScenario(value)
                     # elif self.value_scenario.get() is not None:
                     #     value = self.value_scenario.get()
@@ -795,7 +795,7 @@ class App:
                     self.addWidget_hazard(self.row_hazard)
                 if  len(self.options_scenario) > 1:
                     self.addWidget_scenario(self.row_scenario)
-                if self.options_returnPeriod is not None and len(self.options_returnPeriod) > 1:
+                if self.options_returnPeriod is not None and isinstance(self.options_returnPeriod, list):
                     self.addWidget_returnPeriod(self.row_returnPeriod)
 
                 # update the output directory
