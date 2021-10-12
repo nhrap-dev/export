@@ -1117,7 +1117,7 @@ class App:
                 0,
                 "Unable to build the app: "
                 + str(sys.exc_info()[0])
-                + " | If this problem persists, contact hazus-support@riskmapcds.com.",
+                + " | If this problem persists, contact fema-hazus-support@fema.dhs.gov.",
                 "HazPy",
                 0x1000,
             )
