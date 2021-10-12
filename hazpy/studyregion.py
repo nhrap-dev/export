@@ -123,7 +123,7 @@ class StudyRegion:
             raise
 
 
-    def query(self, sql):
+    def query(self, sql, sql_fallback=''):
         """Performs a SQL query on the Hazus SQL Server database
 
         Keyword Arguments:
@@ -134,9 +134,11 @@ class StudyRegion:
         """
         try:
             self.conn = self.createConnection()
-            df = pd.read_sql(sql, self.conn)
+            try:
+                df = pd.read_sql(sql, self.conn)
+            except:
+                df = pd.read_sql(sql_fallback, self.conn)
             return StudyRegionDataFrame(self, df)
-
         except:
             print("Unexpected error with study region query:", sys.exc_info()[0])
             raise
@@ -715,7 +717,7 @@ class StudyRegion:
                     path = "C:/HazusData/Regions/" + self.name + "/shape/pga.shp"
                     gdf = gpd.read_file(path)
                 except:
-                    print('unable to use raster...defaulting to database')
+                    #print('unable to use raster...defaulting to database')
                     sql = """SELECT a.tract, PARAMVALUE, geometry FROM
                         (SELECT [Tract] as tract ,[PGA] as PARAMVALUE FROM {s}.[dbo].[eqTract]) a
                         inner join
@@ -727,7 +729,6 @@ class StudyRegion:
                 hazardDict["Peak Ground Acceleration (g)"] = gdf
             if hazard == "flood":
                 # this is a list instead of a dictionary, because some of the 'name' properties are the same
-                # TODO: Create a loop for this in order to get all scenarios - BC
                 returnPeriodNumber = str(''.join(filter(str.isdigit, self.returnPeriod)))
                 if returnPeriodNumber == 0:
                     hazardPathDicts = [
@@ -754,7 +755,7 @@ class StudyRegion:
                     ]
                 else:
                     hazardPathDicts = [
-                    # Probabilistic Riverine 5-year # TODO - Change this comment - BC
+                    # Probabilistic Riverine 5-year
                         {
                             "name": f"Water Depth (ft) - {returnPeriodNumber}-year",
                             "returnPeriod": f"{returnPeriodNumber}",
@@ -950,8 +951,9 @@ class StudyRegion:
 
         try:
             if self.hazard == "earthquake":
-                sql = f"SELECT [eqScenarioname] as scenarios FROM [{self.dbName}].[dbo].[RgnExpeqScenario]"
-            
+                sql = f"SELECT [Scenarioname] as scenarios FROM [{self.dbName}].[dbo].[eqShakeMapScenario2]"
+                sql_fallback = f"SELECT [EqScenarioname] as scenarios FROM [{self.dbName}].[dbo].[RgnExpeqScenario]"
+
             # flood can have many scenarios
             if self.hazard == "flood":
                 sql = f"SELECT [StudyCaseName] as scenarios FROM [{self.dbName}].[dbo].[flStudyCase]"
@@ -964,7 +966,11 @@ class StudyRegion:
             # tsunami can have many scenarios
             if self.hazard == "tsunami":
                 sql = f"SELECT [ScenarioName] as scenarios FROM [{self.dbName}].[dbo].[tsScenario]"
-            queryset = self.query(sql)
+            
+            try:
+                queryset = self.query(sql, sql_fallback=sql_fallback)
+            except:
+                queryset = self.query(sql)
             scenarios = list(queryset["scenarios"])
             return scenarios
         except:
