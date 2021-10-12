@@ -139,6 +139,7 @@ class StudyRegion:
             except:
                 df = pd.read_sql(sql_fallback, self.conn)
             return StudyRegionDataFrame(self, df)
+
         except:
             print("Unexpected error with study region query:", sys.exc_info()[0])
             raise
@@ -953,7 +954,6 @@ class StudyRegion:
             if self.hazard == "earthquake":
                 sql = f"SELECT [Scenarioname] as scenarios FROM [{self.dbName}].[dbo].[eqShakeMapScenario]"
                 sql_fallback = f"SELECT [EqScenarioname] as scenarios FROM [{self.dbName}].[dbo].[RgnExpeqScenario]"
-
             # flood can have many scenarios
             if self.hazard == "flood":
                 sql = f"SELECT [StudyCaseName] as scenarios FROM [{self.dbName}].[dbo].[flStudyCase]"
@@ -971,6 +971,7 @@ class StudyRegion:
                 queryset = self.query(sql, sql_fallback=sql_fallback)
             except:
                 queryset = self.query(sql)
+
             scenarios = list(queryset["scenarios"])
             return scenarios
         except:
