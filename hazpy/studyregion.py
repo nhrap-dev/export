@@ -136,8 +136,9 @@ class StudyRegion:
             self.conn = self.createConnection()
             df = pd.read_sql(sql, self.conn)
             return StudyRegionDataFrame(self, df)
+
         except:
-            print("Unexpected error with query:", sys.exc_info()[0])
+            print("Unexpected error with study region query:", sys.exc_info()[0])
             raise
 
     def getHazardBoundary(self):
@@ -175,11 +176,11 @@ class StudyRegion:
                     s=self.name, c=constant
                 ),
                 "flood": """select CensusBlock as block, 
-                Sum(ISNULL(TotalLoss, 0)) * {c} as EconLoss from {s}.dbo.flFRGBSEcLossByTotal
+                Sum(ISNULL(CAST(TotalLoss AS BIGINT), 0)) * {c} as EconLoss from {s}.dbo.flFRGBSEcLossByTotal
                     where StudyCaseId = (select StudyCaseID from {s}.[dbo].[flStudyCase] where StudyCaseName = '{sc}')
                     and ReturnPeriodId = '{rp}'
                  group by CensusBlock
-                 HAVING Sum(ISNULL(TotalLoss, 0)) * {c} > 0
+                 HAVING Sum(ISNULL(CAST(TotalLoss AS BIGINT), 0)) * {c} > 0
                  """.format(
                     s=self.name, c=constant, sc=self.scenario, rp=self.returnPeriod
                 ),
@@ -234,10 +235,10 @@ class StudyRegion:
                     s=self.name
                 ),
                 "flood": """SELECT CensusBlock as block, 
-                SUM(ISNULL(TotalLoss, 0)) * {c}
+                        SUM(ISNULL(CAST(TotalLoss AS BIGINT), 0)) * {c}
                         AS TotalLoss, 
-                        SUM(ISNULL(BuildingLoss, 0)) * {c} AS BldgLoss,
-                        SUM(ISNULL(ContentsLoss, 0)) * {c} AS ContLoss
+                        SUM(ISNULL(CAST(BuildingLoss AS BIGINT), 0)) * {c} AS BldgLoss,
+                        SUM(ISNULL(CAST(ContentsLoss AS BIGINT), 0)) * {c} AS ContLoss
                         FROM [{s}].dbo.[flFRGBSEcLossBySOccup] 
                         where StudyCaseId = (select StudyCaseID from {s}.[dbo].[flStudyCase] where StudyCaseName = '{sc}')
                         and ReturnPeriodId = '{rp}'
@@ -292,10 +293,10 @@ class StudyRegion:
                     s=self.name
                 ),
                 "flood": """SELECT SOccup AS Occupancy, 
-                SUM(ISNULL(TotalLoss, 0)) * {c}
+                        SUM(ISNULL(CAST(TotalLoss AS BIGINT), 0)) * {c}
                         AS TotalLoss, 
-                        SUM(ISNULL(BuildingLoss, 0)) * {c} AS BldgLoss,
-                        SUM(ISNULL(ContentsLoss, 0)) * {c} AS ContLoss
+                        SUM(ISNULL(CAST(BuildingLoss AS BIGINT), 0)) * {c} AS BldgLoss,
+                        SUM(ISNULL(CAST(ContentsLoss AS BIGINT), 0)) * {c} AS ContLoss
                         FROM {s}.dbo.[flFRGBSEcLossBySOccup]
                         where StudyCaseId = (select StudyCaseID from {s}.[dbo].[flStudyCase] where StudyCaseName = '{sc}')
                         and ReturnPeriodId = '{rp}'
