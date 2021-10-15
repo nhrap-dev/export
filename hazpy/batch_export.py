@@ -587,7 +587,7 @@ def exportHPR(hprFile, outputDir, deleteDB=1, deleteTempDir=1, outCsv=1, outShap
                                     #filePathRel = str(filePath.relative_to(Path(hpr.outputDir))) #excludes sr name; for non-aggregate hll metadata
                                     filePathRel = str(filePath.relative_to(Path(hpr.outputDir).parent)) #includes SR name; for aggregate hll metadata
                                     hllMetadataDownload = hllMetadataDownload.append({'id':downloadUUID,
-                                                                                    'category':returnPeriod,
+                                                                                    'category': 'Results',
                                                                                     'subcategory':'Report',
                                                                                     'name':'report_summary.pdf',
                                                                                     'icon':'pdf',
