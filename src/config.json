@@ -41,8 +41,8 @@
   },
   "dev": {
     "hazpyInitUrl": "https://raw.githubusercontent.com/nhrap-dev/hazpy/master/hazpy/__init__.py",
-    "repoZipfileUrl": "https://github.com/nhrap-dev/export/archive/refs/heads/dev.zip",
-    "toolInitUrl": "https://raw.githubusercontent.com/nhrap-dev/export/dev/src/__init__.py",
+    "repoZipfileUrl": "https://github.com/nhrap-dev/export/archive/refs/heads/fix-export-batchExport-update-check.zip",
+    "toolInitUrl": "https://raw.githubusercontent.com/nhrap-dev/export/fix-export-batchExport-update-check/src/__init__.py",
     "virtualEnvironment": "hazus_export_env",
     "pythonPackage": "hazpy",
     "httpTimeout": 5
