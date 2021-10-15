@@ -4,30 +4,15 @@ import os
 import sys
 import tkinter as tk
 from time import time
-from tkinter import (
-    BOTTOM,
-    LEFT,
-    RIGHT,
-    TOP,
-    Canvas,
-    E,
-    Label,
-    N,
-    OptionMenu,
-    PhotoImage,
-    S,
-    StringVar,
-    W,
-    filedialog,
-    messagebox,
-    ttk,
-)
+from tkinter import (BOTTOM, LEFT, RIGHT, TOP, Canvas, E, Label, N, OptionMenu,
+                     PhotoImage, S, StringVar, W, filedialog, messagebox, ttk)
 from tkinter.ttk import Progressbar
-from hazpy.hazusdb import HazusDB
-from hazpy.studyregion import StudyRegion
-#from hazpy.studyregiondataframe import StudyRegionDataFrame
+
 from PIL import Image, ImageTk
-from Python_env.draftemail import draftEmail
+
+from draftemail import draftEmail
+from hazusdb import HazusDB
+from studyregion import StudyRegion
 
 
 class App:
