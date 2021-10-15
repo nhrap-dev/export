@@ -16,8 +16,12 @@ from osgeo import ogr
 from rasterio import features
 from shapely.wkt import loads
 
-from .report import Report
-from .studyregiondataframe import StudyRegionDataFrame
+try:
+    from .report import Report
+    from .studyregiondataframe import StudyRegionDataFrame
+except:
+    from report import Report
+    from studyregiondataframe import StudyRegionDataFrame
 
 #from shapely.geometry.multipolygon import MultiPolygon
 #from shapely.geometry.polygon import Polygon
@@ -1287,7 +1291,6 @@ class StudyRegion:
                             WHERE StudyCaseId = (SELECT StudyCaseID FROM [{self.dbName}].[dbo].[flStudyCase] WHERE StudyCaseName = '{scenario}')"""
                 if self.hazard == 'tsunami':  # selecting 0 due to no return period existing in database
                     sql = f"SELECT '0' as returnPeriod FROM [{self.dbName}].[dbo].[tsScenario]"
-            # TODO: Review this with batch export - BC
             queryset = self.query(sql)
             returnPeriods = [str(returnPeriod).strip() for returnPeriod in queryset['returnPeriod'].values.tolist()]
             # Check for return periods
@@ -1297,6 +1300,9 @@ class StudyRegion:
             elif len(returnPeriods) == 1:
                 self.returnPeriod = ''.join(returnPeriods)
                 returnPeriods = self.returnPeriod
+            else:
+                # sort the multiple return periods
+                returnPeriods = sorted(returnPeriods, key=lambda x: int(x))
             return returnPeriods
         except:
             print("Unexpected error getReturnPeriods:", sys.exc_info()[0])
