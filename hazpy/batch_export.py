@@ -580,7 +580,7 @@ def exportHPR(hprFile, outputDir, deleteDB=1, deleteTempDir=1, outCsv=1, outShap
                                     hpr.report.subtitle = 'SubTitle'
                                     # TODO: Adjust the location - BC
                                     #hpr.report.save(Path.joinpath(exportPath, 'report_summary.pdf'), premade='')
-                                    hpr.report.save(exportPath, premade='')
+                                    hpr.report.save(exportPath, openFile=False, premade='')
                                     #ADD ROW TO hllMetadataDownload TABLE...
                                     downloadUUID = uuid.uuid4()
                                     filePath = Path.joinpath(exportPath, 'report_summary.pdf')

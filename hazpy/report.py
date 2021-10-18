@@ -101,24 +101,13 @@ class Report:
             [type]: [description]
         """
         try:
-            digits = 0
-            number = float(number)
-            formattedString = str("{:,}".format(round(number, digits)))
-            if ('.' in formattedString) and (digits == 0):
-                formattedString = formattedString.split('.')[0]
-            if (number > 1000) and (number < 1000000):
-                split = formattedString.split(',')
-                formattedString = split[0] + '.' + split[1][0:-1] + ' K'
-            if (number > 1000000) and (number < 1000000000):
-                split = formattedString.split(',')
-                formattedString = split[0] + '.' + split[1][0:-1] + ' M'
-            if (number > 1000000000) and (number < 1000000000000):
-                split = formattedString.split(',')
-                formattedString = split[0] + '.' + split[1][0:-1] + ' B'
-            if (number > 1000000000000) and (number < 1000000000000000):
-                split = formattedString.split(',')
-                formattedString = split[0] + '.' + split[1][0:-1] + ' T'
-            return formattedString
+            num = float('{:.3g}'.format(number))
+            magnitude = 0
+            while abs(num) >= 1000:
+                magnitude += 1
+                num /= 1000.0
+            formatted_number = '{}{}'.format('{:f}'.format(num).rstrip('0').rstrip('.'), ['', 'K', 'M', 'B', 'T'][magnitude])
+            return formatted_number
         except:
             return str(number)
 
@@ -482,7 +471,7 @@ class Report:
             plt.clf()
 
             if self.hazard == 'flood':
-                if title == 'Building Damage By Occupancy':
+                if title == 'Building Damage By Occupancy Type':
                     x1 = 19
                     y1 = 116
                     x2 = 297
@@ -493,7 +482,7 @@ class Report:
                     x2 = 297
                     y2 = 568
             if self.hazard == 'hurricane':
-                if title == 'Building Damage By Occupancy':
+                if title == 'Building Damage By Occupancy Type':
                     x1 = 19
                     y1 = 116
                     x2 = 297
@@ -506,7 +495,7 @@ class Report:
                     x2 = 297
                     y2 = 568
             if self.hazard == 'tsunami':
-                if title == 'Building Damage By Occupancy':
+                if title == 'Building Damage By Occupancy Type':
                     x1 = 19
                     y1 = 112
                     x2 = 297
@@ -522,7 +511,7 @@ class Report:
             plt.clf()
             raise
 
-    def save(self, path, deleteTemp=True, openFile=False, premade=None):
+    def save(self, path, deleteTemp=True, openFile=True, premade=None):
         """Creates a PDF of the report
 
         Keyword Arguments: \n
@@ -766,7 +755,7 @@ class Report:
                 ###################################
                 # Earthquake - Building Damage
                 ###################################
-                # add building damage by occupancy
+                # add Building Damage By Occupancy Type
                 try:
                     buildingDamageByOccupancy = (
                         self._Report__getBuildingDamageByOccupancy()
@@ -886,7 +875,7 @@ class Report:
                         buildingDamageByOccupancy,
                         'xCol',
                         yCols,
-                        'Building Damage By Occupancy',
+                        'Building Damage By Occupancy Type',
                         'Buildings',
                         'left',
                     )
@@ -1333,7 +1322,7 @@ class Report:
                 # Flood - Building Damage
                 ###################################
                 try:
-                    # add Building Damage by occupancy
+                    # add Building Damage By Occupancy Type
                     buildingDamageByOccupancy = (
                         self._Report__getBuildingDamageByOccupancy()
                     )
@@ -1361,7 +1350,7 @@ class Report:
                         buildingDamageByOccupancy,
                         'xCol',
                         yCols,
-                        'Building Damage By Occupancy',
+                        'Building Damage By Occupancy Type',
                         'Dollars (USD)',
                         'left',
                     )
@@ -1734,7 +1723,7 @@ class Report:
                 #######################################
                 # Hurricane - Building Damage
                 #######################################
-                # add building damage by occupancy
+                # add Building Damage By Occupancy Type
                 try:
                     buildingDamageByOccupancy = (
                         self._Report__getBuildingDamageByOccupancy()
@@ -1761,7 +1750,7 @@ class Report:
                         buildingDamageByOccupancy,
                         'xCol',
                         yCols,
-                        'Building Damage By Occupancy',
+                        'Building Damage By Occupancy Type',
                         'Building Count',
                         'left',
                     )
@@ -2185,7 +2174,7 @@ class Report:
                     print("Unexpected error:", sys.exc_info()[0])
                     pass
 
-                # add building damage by occupancy
+                # add Building Damage By Occupancy Type
                 try:
                     buildingDamageByOccupancy = (
                         self._Report__getBuildingDamageByOccupancy()
@@ -2212,7 +2201,7 @@ class Report:
                         buildingDamageByOccupancy,
                         'xCol',
                         yCols,
-                        'Building Damage By Occupancy',
+                        'Building Damage By Occupancy Type',
                         'Building Count',
                         'left',
                     )
@@ -2432,25 +2421,25 @@ class Report:
                     tsDataDictionary['legend_1'] = (
                         '$'
                         + self.abbreviate(legend_item1)
-                        + ' - '
+                        + '-'
                         + self.abbreviate(legend_item2)
                     )
                     tsDataDictionary['legend_2'] = (
                         '$'
                         + self.abbreviate(legend_item2)
-                        + ' - '
+                        + '-'
                         + self.abbreviate(legend_item3)
                     )
                     tsDataDictionary['legend_3'] = (
                         '$'
                         + self.abbreviate(legend_item3)
-                        + ' - '
+                        + '-'
                         + self.abbreviate(legend_item4)
                     )
                     tsDataDictionary['legend_4'] = (
                         '$'
                         + self.abbreviate(legend_item4)
-                        + ' - '
+                        + '-'
                         + self.abbreviate(legend_item5)
                     )
                     economicLoss.geometry = economicLoss.geometry.apply(loads)
@@ -2541,42 +2530,42 @@ class Report:
                     tt_legend_8 = breaks[8]
                     tsDataDictionary['tt_legend_0'] = (
                         self.abbreviate(tt_legend_0)
-                        + ' - '
+                        + '-'
                         + self.abbreviate(tt_legend_1)
                     )
                     tsDataDictionary['tt_legend_1'] = (
                         self.abbreviate(tt_legend_1)
-                        + ' - '
+                        + '-'
                         + self.abbreviate(tt_legend_2)
                     )
                     tsDataDictionary['tt_legend_2'] = (
                         self.abbreviate(tt_legend_2)
-                        + ' - '
+                        + '-'
                         + self.abbreviate(tt_legend_3)
                     )
                     tsDataDictionary['tt_legend_3'] = (
                         self.abbreviate(tt_legend_3)
-                        + ' - '
+                        + '-'
                         + self.abbreviate(tt_legend_4)
                     )
                     tsDataDictionary['tt_legend_4'] = (
                         self.abbreviate(tt_legend_4)
-                        + ' - '
+                        + '-'
                         + self.abbreviate(tt_legend_5)
                     )
                     tsDataDictionary['tt_legend_5'] = (
                         self.abbreviate(tt_legend_5)
-                        + ' - '
+                        + '-'
                         + self.abbreviate(tt_legend_6)
                     )
                     tsDataDictionary['tt_legend_6'] = (
                         self.abbreviate(tt_legend_6)
-                        + ' - '
+                        + '-'
                         + self.abbreviate(tt_legend_7)
                     )
                     tsDataDictionary['tt_legend_7'] = (
                         self.abbreviate(tt_legend_7)
-                        + ' - '
+                        + '-'
                         + self.abbreviate(tt_legend_8)
                     )
                     bins = [round(bin) for bin in breaks[1:8]]
