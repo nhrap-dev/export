@@ -2530,54 +2530,54 @@ class Report:
                     )
 
                     breaks = nb(travelTimeToSafety['travelTimeOver65yo'], nb_class=8)
-                    tt_legend0 = breaks[0]
-                    tt_legend1 = breaks[1]
-                    tt_legend2 = breaks[2]
-                    tt_legend3 = breaks[3]
-                    tt_legend4 = breaks[4]
-                    tt_legend5 = breaks[5]
-                    tt_legend6 = breaks[6]
-                    tt_legend7 = breaks[7]
-                    tt_legend8 = breaks[8]
-                    tsDataDictionary['tt_legend0'] = (
-                        self.abbreviate(tt_legend0)
+                    tt_legend_0 = breaks[0]
+                    tt_legend_1 = breaks[1]
+                    tt_legend_2 = breaks[2]
+                    tt_legend_3 = breaks[3]
+                    tt_legend_4 = breaks[4]
+                    tt_legend_5 = breaks[5]
+                    tt_legend_6 = breaks[6]
+                    tt_legend_7 = breaks[7]
+                    tt_legend_8 = breaks[8]
+                    tsDataDictionary['tt_legend_0'] = (
+                        self.abbreviate(tt_legend_0)
                         + ' - '
-                        + self.abbreviate(tt_legend1)
+                        + self.abbreviate(tt_legend_1)
                     )
-                    tsDataDictionary['tt_legend1'] = (
-                        self.abbreviate(tt_legend1)
+                    tsDataDictionary['tt_legend_1'] = (
+                        self.abbreviate(tt_legend_1)
                         + ' - '
-                        + self.abbreviate(tt_legend2)
+                        + self.abbreviate(tt_legend_2)
                     )
-                    tsDataDictionary['tt_legend2'] = (
-                        self.abbreviate(tt_legend2)
+                    tsDataDictionary['tt_legend_2'] = (
+                        self.abbreviate(tt_legend_2)
                         + ' - '
-                        + self.abbreviate(tt_legend3)
+                        + self.abbreviate(tt_legend_3)
                     )
-                    tsDataDictionary['tt_legend3'] = (
-                        self.abbreviate(tt_legend3)
+                    tsDataDictionary['tt_legend_3'] = (
+                        self.abbreviate(tt_legend_3)
                         + ' - '
-                        + self.abbreviate(tt_legend4)
+                        + self.abbreviate(tt_legend_4)
                     )
-                    tsDataDictionary['tt_legend4'] = (
-                        self.abbreviate(tt_legend4)
+                    tsDataDictionary['tt_legend_4'] = (
+                        self.abbreviate(tt_legend_4)
                         + ' - '
-                        + self.abbreviate(tt_legend5)
+                        + self.abbreviate(tt_legend_5)
                     )
-                    tsDataDictionary['tt_legend5'] = (
-                        self.abbreviate(tt_legend5)
+                    tsDataDictionary['tt_legend_5'] = (
+                        self.abbreviate(tt_legend_5)
                         + ' - '
-                        + self.abbreviate(tt_legend6)
+                        + self.abbreviate(tt_legend_6)
                     )
-                    tsDataDictionary['tt_legend6'] = (
-                        self.abbreviate(tt_legend6)
+                    tsDataDictionary['tt_legend_6'] = (
+                        self.abbreviate(tt_legend_6)
                         + ' - '
-                        + self.abbreviate(tt_legend7)
+                        + self.abbreviate(tt_legend_7)
                     )
-                    tsDataDictionary['tt_legend7'] = (
-                        self.abbreviate(tt_legend7)
+                    tsDataDictionary['tt_legend_7'] = (
+                        self.abbreviate(tt_legend_7)
                         + ' - '
-                        + self.abbreviate(tt_legend8)
+                        + self.abbreviate(tt_legend_8)
                     )
                     bins = [round(bin) for bin in breaks[1:8]]
                     classification_kwds = {'bins': bins}
