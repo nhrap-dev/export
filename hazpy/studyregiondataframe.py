@@ -138,6 +138,8 @@ class StudyRegionDataFrame(pd.DataFrame):
             self['geometry'] = self['geometry'].apply(lambda x: loads(str(x)))
             crs = {'init' :'epsg:4326'}
             gdf = gpd.GeoDataFrame(self, geometry='geometry', crs=crs)
+            if "PARAMVALUE" in gdf.columns:
+                gdf.drop(columns="PARAMVALUE", inplace=True)
             # Separate damaged_facilities by geometry type
             if path.split('/')[-1].replace('.shp', '') == 'damaged_facilities':
                 # Create points shapefile
@@ -197,6 +199,8 @@ class StudyRegionDataFrame(pd.DataFrame):
                 self = self.addGeometry()
             self['geometry'] = self['geometry'].apply(lambda x: loads(str(x)))
             gdf = gpd.GeoDataFrame(self, geometry='geometry')
+            if "PARAMVALUE" in gdf.columns:
+                gdf.drop(columns=['PARAMVALUE'], inplace=True)
             try:
                 if gdf.crs is None:
                     gdf.set_crs(in_epsg, inplace=True)
