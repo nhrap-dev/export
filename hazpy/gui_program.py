@@ -161,8 +161,9 @@ class App:
                             "Complete - Draft email can be found in the draft folder of Outlook",
                         )
                         return
-            except:
-                print('unable to draft email')
+            except Exception as e:
+                print('Unable to draft email')
+                print(e)
 
             # add progress bar
             self.addWidget_progress()
@@ -177,6 +178,8 @@ class App:
                 exportOptionsCount += 3
             if self.exportOptions['report']:
                 exportOptionsCount += 2
+            if self.exportOptions['draftEmail']:
+                exportOptionsCount += 1
             progressIncrement = 100 / exportOptionsCount
             progressValue = 0
 

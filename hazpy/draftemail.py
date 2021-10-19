@@ -1,28 +1,16 @@
-#import os
 import win32com.client as win32
 
 
 def draftEmail(studyRegion):
     def abbreviateValue(number):
         try:
-            digits = 0
-            number = float(number)
-            formattedString = str("{:,}".format(round(number, digits)))
-            if ('.' in formattedString) and (digits == 0):
-                formattedString = formattedString.split('.')[0]
-            if (number > 1000) and (number < 1000000):
-                split = formattedString.split(',')
-                formattedString = split[0] + '.' + split[1][0:-1] + ' K'
-            if (number > 1000000) and (number < 1000000000):
-                split = formattedString.split(',')
-                formattedString = split[0] + '.' + split[1][0:-1] + ' M'
-            if (number > 1000000000) and (number < 1000000000000):
-                split = formattedString.split(',')
-                formattedString = split[0] + '.' + split[1][0:-1] + ' B'
-            if (number > 1000000000000) and (number < 1000000000000000):
-                split = formattedString.split(',')
-                formattedString = split[0] + '.' + split[1][0:-1] + ' T'
-            return formattedString
+            num = float('{:.3g}'.format(number))
+            magnitude = 0
+            while abs(num) >= 1000:
+                magnitude += 1
+                num /= 1000.0
+            formatted_number = '{}{}'.format('{:f}'.format(num).rstrip('0').rstrip('.'), ['', 'K', 'M', 'B', 'T'][magnitude])
+            return formatted_number
         except:
             return str(number)
 
@@ -61,14 +49,19 @@ def draftEmail(studyRegion):
         qs_counties = queryset.addCounties()
         return qs_counties
 
-    def createDraftEmail(HTML='', subject='Hazus Wind Loss Modeling – Hurricane [HURRICANE_NAME] for Advisory [ADVISORY_NUMBER]', recipient='', send=False):
-
+    def createDraftEmail(HTML='', recipient='', send=False):
+        if 'Hurricane ' in  studyRegion.scenario:
+            subject = f'Hazus Wind Loss Modeling – {studyRegion.scenario} for Advisory [ADVISORY_NUMBER]'
+        else:
+            subject = f'Hazus Wind Loss Modeling – Hurricane {studyRegion.scenario} for Advisory [ADVISORY_NUMBER]'
+        hazard_name = studyRegion.scenario
         if len(HTML) == 0:
             results = studyRegion.getResults()
             residential = getResidentalDamageCounts()
             html_df = results.merge(residential, on='tract')
 
             resultsHTML = ''
+            # TODO: Change this - BC
             listLimit = 5
             for state in html_df['state'].unique():
                 slice = html_df[html_df['state'] == state]
@@ -77,6 +70,7 @@ def draftEmail(studyRegion):
                 # economic loss
                 total_econloss = toDollars(slice['EconLoss'].sum(), abbreviate=True)
                 econloss_df = slice_grouped.sort_values('EconLoss', ascending=False)[0:listLimit]
+                econloss_count = len(econloss_df)
                 econloss = ''
                 for row in range(len(econloss_df)):
                     county = econloss_df.index[row]
@@ -107,7 +101,7 @@ def draftEmail(studyRegion):
                     <strong>"""+state+"""</strong>
                     <ul class="results-container">
                         <ul class="results">
-                            <li>"""+total_econloss+""" in Total Economic Loss. The """+str(listLimit)+""" counties with the highest modeled economic impacts are below:</li>
+                            <li>"""+total_econloss+""" in Total Economic Loss. The """+str(econloss_count)+""" counties with the highest modeled economic impacts are below:</li>
                             <ul class="results-details">
                                 """+econloss+"""
                             </ul>
@@ -156,8 +150,8 @@ def draftEmail(studyRegion):
             <html>
             <body>
             <p>Greetings,</p>
-            <p>We have completed wind loss modeling for Hurricane [HURRICANE_NAME] based on Advisory [ADVISORY_NUMBER]. Hazus does not generate impact assessments for wind below 50 mph; therefore, locations with lower windspeeds were excluded from the model.  Attached are Hazus results and a snapshot summary is below:</p>
-            <strong>Hurricane [HURRICANE_NAME] Hazus Hurricane Wind Loss Modeling for Advisory [ADVISORY_NUMBER] Loss Summary</strong>
+            <p>We have completed wind loss modeling for Hurricane """ + hazard_name.replace('Hurricane ', '') + """ based on Advisory [ADVISORY_NUMBER]. Hazus does not generate impact assessments for wind below 50 mph; therefore, locations with lower windspeeds were excluded from the model.  Attached are Hazus results and a snapshot summary is below:</p>
+            <strong>Hurricane """ + hazard_name.replace('Hurricane ', '') +  """ Hazus Hurricane Wind Loss Modeling for Advisory [ADVISORY_NUMBER] Loss Summary</strong>
             """+resultsHTML+"""
             </body>
             </html>
