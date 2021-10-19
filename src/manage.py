@@ -241,14 +241,14 @@ class Manage:
         try:
             socket.setdefaulttimeout(self.http_timeout)
             port = 80
-            try:
+            if os.environ['COMPUTERNAME'][0:4] != 'FEMA':
                 # try without the proxy
                 host = 'google.com'  # The remote host
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.connect((host, port))
                 s.close()
                 return False
-            except:
+            else:
                 # try with the fema proxy
                 host = "proxy.apps.dhs.gov"  # proxy server IP
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
