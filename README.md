@@ -17,20 +17,6 @@ The Hazus Export tool requires Hazus, ArcGIS Desktop, and conda to be installed 
 
 For information about the fields, values and units found in exported Hazus results data, please refer to the guide sheets in the data-dictionaries folder: "EQDataDictionary", "TSDataDictionary", "FLDataDictionary", and "HUDataDictionary". https://github.com/nhrap-hazus/export/tree/master/data-dictionaries 
 
-**Table of Possible Hazard/Scenario/Scenario Type/Return Period Combinations (NOT YET COMPLETE):**
-
-|HPR / Study Region|Hazard|Scenario|Scenario Type|Return Period|
-|---     |---   |---     |---          |---          |
-|studyregion1|EQ|1: user defined name?|probabilistic|8/9: 100, 250, 500, 750, 1000, 1500, 2000, 2500, Annual|
-|studyregion1|EQ|1: user defined name?|deterministic|1: user defined name?|
-|studyregion1|FL|1+: StudyCase: user defined name?|riverine|1+: user defined name?|
-|studyregion1|FL|1+: StudyCase: user defined name?|coastal|1+: user defined name?|
-|studyregion1|FL|1+: StudyCase: user defined name?|riverine & coastal|1+: user defined name?|
-|studyregion1|FL|1: StudyCase: user defined name?|surge|1: user defined name?|
-|studyregion1|HU|1: user defined name?|probabilistic|7/8: 10, 20, 50, 100, 200, 500, 1000, Annual|
-|studyregion1|HU|1: user defined name?|deterministic|1: user defined name?|
-|studyregion1|TS|1: user defined name?|n/a|n/a|
-
 ## Contact
 
 Issues can be reported through the repository on Github (https://github.com/nhrap-hazus/export)
@@ -75,16 +61,16 @@ The Hazus Batch Export Tool is used to run the Hazus Export Tool on one or more 
 
 * The batchExport script has been tested on HPR created by Hazus 3.1 and up. 
   * Hazus 3.0 created HPR and lower will likely fail and are not supported. The script will skip over them.
-  * For HPR versions lower than 3.1 it's recommended to use Hazus 4.2.3 or Hazus 5.0 to recreate the HPR.
-    * There was a large restructing of Hazus in 3.0 and the datum change probably happened in 3.1.
-* There is a script ("batchHPRComment.py") in python_env that can be used to look in a directory and subdirectory for HPR files and read out what version of Hazus they were created by. It will also notify if the HPR is not a valid zipfile and would thus fail to be run in the batchExport script.
+  * For HPR versions lower than 3.1 it's recommended to use Hazus 4.2.3 or newer be used to create the HPR.
+    * There was a large restructuring of Hazus in 3.0 and the datum change probably happened in 3.1.
+* There is a script ("batchHPRComment.py") in python_env that is used to obtain the version of Hazus used to create the .hpr. It will also notify if the HPR is not a valid zipfile and would thus fail to be run in the batchExport script.
 
 **Hazus Loss Library (HLL) Metadata:**
 
 There are three csv files named 'Analysis.csv', 'Download.csv', and 'Event.csv' that should exist in the batchExport output folder 
 for each HPR file/StudyRegion, these are specific to that HPR and contain relative paths, however these relative paths are set for
 the next folder up. A the parent/root folder of the batchexport output (as defined by the user in the batchExport.py) there are 
-three csv files named 'Analysis.csv', 'Download.csv', and 'Event.csv' that are the aggreagted files from each HPR. These csv files
+three csv files named 'Analysis.csv', 'Download.csv', and 'Event.csv' that are the aggregated files from each HPR. These csv files
 are the HLL Metadata files and are used by the HLL batch upload process.
 
 If a user is running multiple batches there is another script ("batchExportPostHLLMetadataAggregate.py") that can be used to 
@@ -129,7 +115,7 @@ hazard, scenario, return period permutation and files in different directories d
 * You can change the 'source'. Max 100 characters (may be larger).
 * Meta can contain any info.
   * This is a json object or python dictionary, one level deep.
-  * Need to use double qoutes and separate each item by spaces i.e. {"firstname":"Patty","nickname":"Pat"}
+  * Need to use double quotes and separate each item by spaces i.e. {"firstname":"Patty","nickname":"Pat"}
 * event must match an id in Event.csv
 * Required fields: id, name, hazard, analysisType, date, source, modifiedInventory, event
 
@@ -148,9 +134,9 @@ To rename the Scenario you can open the 'Analysis.csv' and modify the value in t
 * Probabilistic analysis will have an Annual return period and it will not have a hazardBoundaryPoly.zip.
 * Meta can contain any info.
   * This is a json object or python dictionary, one level deep.
-  * Need to use double qoutes and separate each item by spaces i.e. {"firstname":"Patty","nickname":"Pat"}
+  * Need to use double quotes and separate each item by spaces i.e. {"firstname":"Patty","nickname":"Pat"}
 * analysis must match an id in Analysis.csv
-* Required fields: id, category, subcategroy, name, icon, analysis
+* Required fields: id, category, subcategory, name, icon, analysis
 
 ## Requirements
 
@@ -166,7 +152,7 @@ It's recommended that if you want to rerun an HPR that you should delete or rena
 
 ![batch input folder](Images/batchInputFolder.png "batch input folder")
 
-**1b. Adjust the desired outputs by modifiying the values in the 'hazpy/batch_export.py'**
+**1b. Adjust the desired outputs by modifying the values in the 'hazpy/batch_export.py'**
 Look near the very bottom of the script for these entries:
 
     #USER DEFINED VALUES
