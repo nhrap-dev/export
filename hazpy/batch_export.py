@@ -576,10 +576,8 @@ def exportHPR(hprFile, outputDir, deleteDB=1, deleteTempDir=1, outCsv=1, outShap
                                     #TODO test this; CL
                                     print('\nWriting results to PDF...')
                                     hpr.setReport()
-                                    hpr.report.title = 'Title'
+                                    hpr.report.title = scenario['ScenarioName'].title().replace('Fema', 'FEMA')
                                     hpr.report.subtitle = 'SubTitle'
-                                    # TODO: Adjust the location - BC
-                                    #hpr.report.save(Path.joinpath(exportPath, 'report_summary.pdf'), premade='')
                                     hpr.report.save(exportPath, openFile=False, premade='')
                                     #ADD ROW TO hllMetadataDownload TABLE...
                                     downloadUUID = uuid.uuid4()
