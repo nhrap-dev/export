@@ -13,7 +13,6 @@ import contextily as cx
 import datetime
 import fitz
 import geopandas as gpd
-import io
 import matplotlib.ticker as ticker
 import matplotlib.patheffects as pe
 import os
@@ -469,33 +468,30 @@ class Report:
             src = os.getcwd() + '/' + self._tempDirectory + '/' + str(uuid()) + ".png"
             plt.savefig(src, pad_inches=0, bbox_inches='tight', dpi=600)
             plt.clf()
-
             if self.hazard == 'flood':
-                if title == 'Building Damage By Occupancy Type':
+                if title == 'Building Damage by Occupancy Type':
                     x1 = 19
                     y1 = 116
                     x2 = 297
                     y2 = 245
-                if title == 'Building Damage By Type':
+                if title == 'Building Damage by Type':
                     x1 = 19
                     y1 = 432
                     x2 = 297
                     y2 = 568
             if self.hazard == 'hurricane':
-                if title == 'Building Damage By Occupancy Type':
+                if title == 'Building Damage by Occupancy Type':
                     x1 = 19
                     y1 = 116
                     x2 = 297
                     y2 = 250
-                if (
-                    title == 'Damaged Essential Facilities'
-                ):
+                if title == 'Damaged Essential Facilities':
                     x1 = 19
                     y1 = 434
                     x2 = 297
                     y2 = 568
             if self.hazard == 'tsunami':
-                if title == 'Building Damage By Occupancy Type':
+                if title == 'Building Damage by Occupancy Type':
                     x1 = 19
                     y1 = 112
                     x2 = 297
@@ -755,7 +751,7 @@ class Report:
                 ###################################
                 # Earthquake - Building Damage
                 ###################################
-                # add Building Damage By Occupancy Type
+                # add Building Damage by Occupancy Type
                 try:
                     buildingDamageByOccupancy = (
                         self._Report__getBuildingDamageByOccupancy()
@@ -875,7 +871,7 @@ class Report:
                         buildingDamageByOccupancy,
                         'xCol',
                         yCols,
-                        'Building Damage By Occupancy Type',
+                        'Building Damage by Occupancy Type',
                         'Buildings',
                         'left',
                     )
@@ -1322,7 +1318,7 @@ class Report:
                 # Flood - Building Damage
                 ###################################
                 try:
-                    # add Building Damage By Occupancy Type
+                    # add Building Damage by Occupancy Type
                     buildingDamageByOccupancy = (
                         self._Report__getBuildingDamageByOccupancy()
                     )
@@ -1350,7 +1346,7 @@ class Report:
                         buildingDamageByOccupancy,
                         'xCol',
                         yCols,
-                        'Building Damage By Occupancy Type',
+                        'Building Damage by Occupancy Type',
                         'Dollars (USD)',
                         'left',
                     )
@@ -1413,7 +1409,7 @@ class Report:
                 #######################################################
                 # Flood - Building Damaged by Building Type
                 #######################################################
-                # add building damage by building type
+                # add Building Damage by building type
                 try:
                     buildingDamageByType = self._Report__getBuildingDamageByType()
                     # reorder the columns
@@ -1428,7 +1424,7 @@ class Report:
                         buildingDamageByType,
                         'xCol',
                         yCols,
-                        'Building Damage By Type',
+                        'Building Damage by Type',
                         'Dollars (USD)',
                         'left',
                     )
@@ -1723,7 +1719,7 @@ class Report:
                 #######################################
                 # Hurricane - Building Damage
                 #######################################
-                # add Building Damage By Occupancy Type
+                # add Building Damage by Occupancy Type
                 try:
                     buildingDamageByOccupancy = (
                         self._Report__getBuildingDamageByOccupancy()
@@ -1750,7 +1746,7 @@ class Report:
                         buildingDamageByOccupancy,
                         'xCol',
                         yCols,
-                        'Building Damage By Occupancy Type',
+                        'Building Damage by Occupancy Type',
                         'Building Count',
                         'left',
                     )
@@ -2174,7 +2170,7 @@ class Report:
                     print("Unexpected error:", sys.exc_info()[0])
                     pass
 
-                # add Building Damage By Occupancy Type
+                # add Building Damage by Occupancy Type
                 try:
                     buildingDamageByOccupancy = (
                         self._Report__getBuildingDamageByOccupancy()
@@ -2201,7 +2197,7 @@ class Report:
                         buildingDamageByOccupancy,
                         'xCol',
                         yCols,
-                        'Building Damage By Occupancy Type',
+                        'Building Damage by Occupancy Type',
                         'Building Count',
                         'left',
                     )
