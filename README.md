@@ -163,7 +163,7 @@ Look near the very bottom of the script for these entries:
     _outReport = 1      #Export report pdf files: 1 to export or 0 to skip
     _outJson = 1        #Export json files: 1 to export or 0 to skip
 
-If you wanted to export just the reports it would need to look like this:
+If you want to export only the reports, then it would need to look like this:
 
     #USER DEFINED VALUES
     hprDir = Path.absolute(Path(r'./batch_input'))      #The directory containing hpr files
@@ -183,4 +183,4 @@ If you wanted to export just the reports it would need to look like this:
 
 **Script Failure:**
 
-If the script fails without dropping the bk_* (where * is the name of the hpr file or its .bk sql server backup database) database then you will need to do it manually. Using SQL Server Management Studio you can DELETE the bk_* database and using Windows explorer you can delete the temp folder that contains the unzipped contents of the HPR file.
+If the script fails without dropping the bk_* (where * is the name of the hpr file or its .bk sql server backup database) database, then you will need to do it manually. Using SQL Server Management Studio you can DELETE the bk_* database and using Windows explorer you can delete the temp folder that contains the unzipped contents of the HPR file.
