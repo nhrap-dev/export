@@ -65,8 +65,7 @@ def getAnalysisLogDate(logfile):
         print(e)
 
 def exportHPR(hprFile, outputDir, deleteDB=1, deleteTempDir=1, outCsv=1, outShapefile=1, outReport=0, outJson=1):
-    """This tool will use hazpy.legacy.hazuspackagregion to batch export
-        hpr files in a directory to a user specified output directory.
+    """This tool will batch export hpr files from batch_input to batch_output.
 
         Keyword Arguments:
                 hprFile: str -- a directory path containing hpr files
@@ -149,7 +148,7 @@ def exportHPR(hprFile, outputDir, deleteDB=1, deleteTempDir=1, outCsv=1, outShap
                                                         'analysis'])
 
 
-            #ITERATE OVER THE HAZARD, SCENARIO, RETURNPERIOD AVAIALABLE COMBINATIONS...
+            #ITERATE OVER THE HAZARD, SCENARIO, RETURNPERIOD AVAILABLE COMBINATIONS...
             for hazard in hpr.HazardsScenariosReturnPeriods:
                 print()
                 print(f"Hazard: {hazard['Hazard']}") #debug
@@ -159,21 +158,23 @@ def exportHPR(hprFile, outputDir, deleteDB=1, deleteTempDir=1, outCsv=1, outShap
 
                 #EXPORT Hazus Package Region TO GeoJSON...
                 exportPath = Path.joinpath(Path(outputPath))
-                try:
-                    print('\nWriting StudyRegionBoundary to geojson...')
-                    studyRegionBoundary = hpr.getStudyRegionBoundary()
-                    studyRegionBoundary.toGeoJSON(Path.joinpath(exportPath, 'StudyRegionBoundary.geojson'))
-                except Exception as e:
-                    print('\nStudyRegionBoundary not available to export to geojson')
-                    print(e)
+                if outJson == 1:
+                    try:
+                        print('\nWriting StudyRegionBoundary to geojson...')
+                        studyRegionBoundary = hpr.getStudyRegionBoundary()
+                        studyRegionBoundary.toGeoJSON(Path.joinpath(exportPath, 'StudyRegionBoundary.geojson'))
+                    except Exception as e:
+                        print('\nStudyRegionBoundary not available to export to geojson')
+                        print(e)
+                    filePath = Path.joinpath(exportPath, 'StudyRegionBoundary.geojson')
+                    #filePathRel = str(filePath.relative_to(Path(hpr.outputDir))) #excludes sr name; for non-aggregate hll metadata
+                    filePathRel = str(filePath.relative_to(Path(hpr.outputDir).parent)) #includes SR name; for aggregate hll metadata
+                else:
+                    filePathRel = ''
 
                 #Event metadata...
                 #ADD ROW TO hllMetadataEvent TABLE...
                 hazardUUID = uuid.uuid4()
-                filePath = Path.joinpath(exportPath, 'StudyRegionBoundary.geojson')
-                #filePathRel = str(filePath.relative_to(Path(hpr.outputDir))) #excludes sr name; for non-aggregate hll metadata
-                filePathRel = str(filePath.relative_to(Path(hpr.outputDir).parent)) #includes SR name; for aggregate hll metadata
-                #need to add path to hazard boundary (is this unique for each returnperiod/download in FIMS?)
                 hllMetadataEvent = hllMetadataEvent.append({'id':hazardUUID,
                                                             'name':hpr.dbName,
                                                             'geom':filePathRel}, ignore_index=True)
@@ -243,7 +244,7 @@ def exportHPR(hprFile, outputDir, deleteDB=1, deleteTempDir=1, outCsv=1, outShap
                             print(e)
                             
                         if skipHPR == 0:
-                            #HLL Analysis/Scenario Metadata (some sceneario/analysis level info requires returnperiod/download input)...
+                            #HLL Analysis/Scenario Metadata (some scenario/analysis level info requires returnperiod/download input)...
                             geographicCountUnit = hpr.getGeographicCountUnitofResults(results)
                             scenarioGeographicCount = geographicCountUnit[0]
                             scenarioGeographicUnit = geographicCountUnit[1]
@@ -667,7 +668,7 @@ def aggregateHllMetadataFiles(directory):
 
     Notes:
         The path should be the root folder containing all the exported hpr folder.
-        'Event.csv','Analysis.csv','Download.csv'. Wath out for the relative path in
+        'Event.csv','Analysis.csv','Download.csv'. Watch out for the relative path in
         the hll metadata.
     """
     print(directory) #user defined outputdir

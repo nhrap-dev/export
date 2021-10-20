@@ -140,11 +140,12 @@ To rename the Scenario you can open the 'Analysis.csv' and modify the value in t
 
 ## Requirements
 
-Same as Hazus Export.
+Same as Hazus Export except that Batch Export cannot be run from a User's folder such as Documents, Downloads, etc due to permissions issues when restoring the hpr to SQL Server. It is recommended that you copy the unzipped folder to your C drive before running the tool.
 
 ## To Use
 
 Follow the steps below to run Batch Export. To ensure .py files run when double-clicked, right-click the .py file and go to Properties. Under the "General" tab next to "Opens With", make sure "python.exe" is selected. If not, click "Change" and select "python.exe" from your Python installation directory.
+
 
 It's recommended that if you want to rerun an HPR that you should delete or rename the previous run's output folder for that HPR. 
 
