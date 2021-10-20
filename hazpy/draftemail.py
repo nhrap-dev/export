@@ -63,12 +63,8 @@ def draftEmail(studyRegion):
         qs_counties = queryset.addCounties()
         return qs_counties
 
-    def createDraftEmail(HTML='', recipient='', send=False):
-        if 'Hurricane ' in  studyRegion.scenario:
-            subject = f'Hazus Wind Loss Modeling – {studyRegion.scenario} for Advisory [ADVISORY_NUMBER]'
-        else:
-            subject = f'Hazus Wind Loss Modeling – Hurricane {studyRegion.scenario} for Advisory [ADVISORY_NUMBER]'
-        hazard_name = studyRegion.scenario
+# TODO: put placeholder back for Hurricane name
+    def createDraftEmail(HTML='', subject='Hazus Wind Loss Modeling – Hurricane [HURRICANE_NAME] for Advisory [ADVISORY_NUMBER]', recipient='', send=False):
         if len(HTML) == 0:
             results = studyRegion.getResults()
             residential = getResidentalDamageCounts()
@@ -163,8 +159,8 @@ def draftEmail(studyRegion):
             <html>
             <body>
             <p>Greetings,</p>
-            <p>We have completed wind loss modeling for Hurricane """ + hazard_name.replace('Hurricane ', '') + """ based on Advisory [ADVISORY_NUMBER]. Hazus does not generate impact assessments for wind below 50 mph; therefore, locations with lower windspeeds were excluded from the model.  Attached are Hazus results and a snapshot summary is below:</p>
-            <strong>Hurricane """ + hazard_name.replace('Hurricane ', '') +  """ Hazus Hurricane Wind Loss Modeling for Advisory [ADVISORY_NUMBER] Loss Summary</strong>
+            <p>We have completed wind loss modeling for Hurricane [HURRICANE_NAME] based on Advisory [ADVISORY_NUMBER]. Hazus does not generate impact assessments for wind below 50 mph; therefore, locations with lower windspeeds were excluded from the model.  Attached are Hazus results and a snapshot summary is below:</p>
+            <strong>Hurricane [HURRICANE_NAME] Hazus Hurricane Wind Loss Modeling for Advisory [ADVISORY_NUMBER] Loss Summary</strong>
             """+resultsHTML+"""
             </body>
             </html>
