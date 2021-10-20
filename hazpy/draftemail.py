@@ -15,26 +15,40 @@ def draftEmail(studyRegion):
             return str(number)
 
     def addCommas(number, abbreviate=False, truncate=False):
-        if truncate:
-            number = int(round(number))
-        if abbreviate:
-            number = abbreviateValue(number)
+        if int(number) >= 10:
+            if truncate:
+                number = int(round(number))
+            if abbreviate:
+                number = abbreviateValue(number)
+            else:
+                number = "{:,}".format(number)
         else:
-            number = "{:,}".format(number)
+            number = ' < 10'
         return number
 
     def toDollars(number, abbreviate=False, truncate=False):
-        if truncate:
-            number = int(round(number))
-        if abbreviate:
-            dollars = abbreviateValue(number)
-            dollars = '$' + dollars
+        if int(number) >= 1000:
+            if truncate:
+                number = int(round(number))
+            if abbreviate:
+                dollars = abbreviateValue(number)
+                dollars = '$' + dollars
+            else:
+                dollars = '$'+"{:,}".format(number)
+                dollarsSplit = dollars.split('.')
+                if len(dollarsSplit) > 1:
+                    dollars = '.'.join([dollarsSplit[0], dollarsSplit[1][0:1]])
         else:
-            dollars = '$'+"{:,}".format(number)
-            dollarsSplit = dollars.split('.')
-            if len(dollarsSplit) > 1:
-                dollars = '.'.join([dollarsSplit[0], dollarsSplit[1][0:1]])
+            dollars = ' < $1k'
         return dollars
+
+    # TODO: Figure way to get advisory number
+    # def getAdvisoryNumber():
+    #     pass
+    #     sql="""SELECT huScenarioName as scenario FROM syHazus.dbo.huScenario"""
+    #     queryset = studyRegion.query(sql)
+    #     advisory_number = queryset
+    #     return advisory_number
 
     def getResidentalDamageCounts():
         sql="""select p.tract, affected * RESI as affected, minor * RESI as minor, major * RESI as major, destroyed * RESI as destroyed from 
@@ -61,7 +75,6 @@ def draftEmail(studyRegion):
             html_df = results.merge(residential, on='tract')
 
             resultsHTML = ''
-            # TODO: Change this - BC
             listLimit = 5
             for state in html_df['state'].unique():
                 slice = html_df[html_df['state'] == state]
@@ -98,7 +111,7 @@ def draftEmail(studyRegion):
                 update_html = """
                     <br />
                     <br />
-                    <strong>"""+state+"""</strong>
+                    <strong><u>"""+state+"""</u></strong>
                     <ul class="results-container">
                         <ul class="results">
                             <li>"""+total_econloss+""" in Total Economic Loss. The """+str(econloss_count)+""" counties with the highest modeled economic impacts are below:</li>
