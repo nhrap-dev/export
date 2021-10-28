@@ -145,7 +145,7 @@ class App:
 
             # (extra) draft email if the checkbox is selected
             try:
-                if 'opt_draftEmail' in dir(self):
+                if 'opt_draftEmail' in dir(self) and self.studyRegion.hazard.lower() == 'hurricane':
                     if self.exportOptions['draftEmail']:
                         draftEmail(self.studyRegion)
                     # return if only draftEmail is checked
@@ -616,7 +616,7 @@ class App:
             fg=self.starColor,
         )
         self.required_hazard.grid(
-            row=row, column=0, padx=(self.padl, 0), pady=(20, 5), sticky=W
+            row=10, column=0, padx=(self.padl, 0), pady=(20, 5), sticky=W
         )
         # # hazard label
         self.label_hazard = tk.Label(
@@ -626,8 +626,8 @@ class App:
             background=self.backgroundColor,
             fg=self.fontColor,
         )
-        self.label_hazard.grid(row=row, column=1, padx=0, pady=(20, 5), sticky=W)
-        row += 1
+        self.label_hazard.grid(row=10, column=1, padx=0, pady=(20, 5), sticky=W)
+        #row = 10
         # # hazard dropdown
         self.dropdown_hazard = ttk.Combobox(
             self.root,
@@ -636,7 +636,7 @@ class App:
             width=40,
             style='H.TCombobox',
         )
-        self.dropdown_hazard.grid(row=row, column=1, padx=(0, 0), pady=(0, 0), sticky=W)
+        self.dropdown_hazard.grid(row=11, column=1, padx=(0, 0), pady=(0, 0), sticky=W)
 
     def removeWidget_hazard(self):
         """removes the hazard dropdown widget"""
@@ -834,6 +834,21 @@ class App:
         if value != '':
             # update study region class with value
             self.studyRegion.setHazard(value)
+            # Remove Draft Email check button, if exists
+            if hasattr(self, 'draft_email_button'):
+                self.draft_email_button.grid_forget()
+            # Add Draft Email check button if selected hazard is hurricane
+            if str(value).lower() == 'hurricane':
+                self.opt_draftEmail = tk.IntVar(value=1)
+                xpadl = 200
+                self.draft_email_button = ttk.Checkbutton(
+                    self.root,
+                    text="Draft Email",
+                    variable=self.opt_draftEmail,
+                    style='BW.TCheckbutton',
+                    command=self.handle_draftEmailCheckbox,
+                )
+                self.draft_email_button.grid(row=8, column=1, padx=(xpadl, 0), pady=0, sticky=W)
             print('Hazard set as ' + str(value))
 
             # get new scenario list
