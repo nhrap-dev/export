@@ -760,10 +760,25 @@ class App:
         """handles widget creation and removal and initializes the study region class based off the study region dropdown selection"""
         try:
             value = self.value_studyRegion.get()
+            # Remove draft email check button
+            if hasattr(self, 'draft_email_button'):
+                self.draft_email_button.grid_forget()
             # if a study region is selected
             if value != '':
                 # init StudyRegion class
                 self.studyRegion = StudyRegion(studyRegion=str(value))
+                # Add Draft Email checkbutton for hurricanes
+                if self.studyRegion.hazard.lower() == 'hurricane':
+                    self.opt_draftEmail = tk.IntVar(value=1)
+                    xpadl = 200
+                    self.draft_email_button = ttk.Checkbutton(
+                        self.root,
+                        text="Draft Email",
+                        variable=self.opt_draftEmail,
+                        style='BW.TCheckbutton',
+                        command=self.handle_draftEmailCheckbox,
+                    )
+                    self.draft_email_button.grid(row=8, column=1, padx=(xpadl, 0), pady=0, sticky=W)
                 # get lists of hazards, scenarios, and return periods
                 self.options_hazard = self.studyRegion.getHazardsAnalyzed()
                 self.options_scenario = self.studyRegion.getScenarios()
@@ -771,7 +786,6 @@ class App:
                     self.options_returnPeriod = self.studyRegion.getReturnPeriods()
                 else:
                     self.studyRegion.setScenario(scenario=''.join(self.options_scenario))
-                    #self.studyRegion.setScenario()
                     self.studyRegion.scenario = str(''.join(self.options_scenario))
                     self.options_returnPeriod = self.studyRegion.getReturnPeriods(scenario=self.studyRegion.scenario)
 
