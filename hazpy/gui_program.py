@@ -178,8 +178,8 @@ class App:
                 exportOptionsCount += 3
             if self.exportOptions['report']:
                 exportOptionsCount += 2
-            if self.exportOptions['draftEmail']:
-                exportOptionsCount += 1
+            # if self.exportOptions['draftEmail']:
+            #     exportOptionsCount += 1
             progressIncrement = 100 / exportOptionsCount
             progressValue = 0
 
@@ -779,6 +779,7 @@ class App:
                         command=self.handle_draftEmailCheckbox,
                     )
                     self.draft_email_button.grid(row=8, column=1, padx=(xpadl, 0), pady=0, sticky=W)
+                    self.exportOptions['draftEmail'] = self.opt_draftEmail.get()
                 # get lists of hazards, scenarios, and return periods
                 self.options_hazard = self.studyRegion.getHazardsAnalyzed()
                 self.options_scenario = self.studyRegion.getScenarios()
