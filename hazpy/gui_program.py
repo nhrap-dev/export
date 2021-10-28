@@ -779,7 +779,6 @@ class App:
                         command=self.handle_draftEmailCheckbox,
                     )
                     self.draft_email_button.grid(row=8, column=1, padx=(xpadl, 0), pady=0, sticky=W)
-                    self.exportOptions['draftEmail'] = self.opt_draftEmail.get()
                 # get lists of hazards, scenarios, and return periods
                 self.options_hazard = self.studyRegion.getHazardsAnalyzed()
                 self.options_scenario = self.studyRegion.getScenarios()
@@ -818,7 +817,8 @@ class App:
                     self.text_outputDirectory.insert(
                         "1.0", self.outputDirectory + '/' + self.studyRegion.name
                     )
-        except:
+        except Exception as e:
+            print(e)
             ctypes.windll.user32.MessageBoxW(
                 None,
                 u"Unable to initialize the Study Region. Please select another Study Region to continue. Error: "
