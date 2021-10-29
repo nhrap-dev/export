@@ -8,4 +8,3 @@ if __name__=='__main__':
         manage.startApp(app_path)
     except Exception as e:
         print(e)
-
