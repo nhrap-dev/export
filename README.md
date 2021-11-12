@@ -17,12 +17,6 @@ The Hazus Export tool requires Hazus, ArcGIS Desktop, and conda to be installed 
 
 For information about the fields, values and units found in exported Hazus results data, please refer to the guide sheets in the data-dictionaries folder: "EQDataDictionary", "TSDataDictionary", "FLDataDictionary", and "HUDataDictionary". https://github.com/nhrap-hazus/export/tree/master/data-dictionaries 
 
-## Contact
-
-Issues can be reported through the repository on Github (https://github.com/nhrap-hazus/export)
-
-For questions contact fema-hazus-support@fema.dhs.gov
-
 ## To Use
 
 Follow the steps below to run Export. To ensure .py files run when double-clicked, right-click the .py file and go to Properties. Under the "General" tab next to "Opens With", make sure "python.exe" is selected. If not, click "Change" and select "python.exe" from your Python installation directory.
@@ -185,3 +179,9 @@ If you want to export only the reports, then it would need to look like this:
 **Script Failure:**
 
 If the script fails without dropping the bk_* (where * is the name of the hpr file or its .bk sql server backup database) database, then you will need to do it manually. Using SQL Server Management Studio you can DELETE the bk_* database and using Windows explorer you can delete the temp folder that contains the unzipped contents of the HPR file.
+
+## Contact
+
+Issues can be reported through the repository on Github (https://github.com/nhrap-hazus/export)
+
+For questions contact fema-hazus-support@fema.dhs.gov
