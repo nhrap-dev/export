@@ -33,7 +33,7 @@ Follow the steps below to run Export.
 **6. Select a folder destination for exported files.**
 ![Destination](Images/Step6.png "Destination")
 
-**7. Click "Run".**
+**7. Click "Export".**
 ![Run and Review](Images/Step7.png "Run and Review")
 
 # Hazus Batch Export Tool
