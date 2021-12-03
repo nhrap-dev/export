@@ -6,22 +6,20 @@ The Hazus Export Tool summarizes Hazus risk assessment results stored on your de
 
 The Hazus Export tool requires Hazus, ArcGIS Desktop, and conda to be installed on your computer. If you haven't already, follow this [README](https://github.com/nhrap-dev/Environment-Setup/tree/update-README) to setup your machine with miniforge and conda before trying to run Export.
 
-
 ## Documentation
-
-For information about the fields, values and units found in exported Hazus results data, please refer to the guide sheets in the data-dictionaries folder: "EQDataDictionary", "TSDataDictionary", "FLDataDictionary", and "HUDataDictionary". https://github.com/nhrap-hazus/export/tree/master/data-dictionaries 
+Please refer to the guide sheets in the [data-dictionaries](/data-dictionaries) folder for information about the fields, values, and units found in exported HAZUS results data.
 
 ## To Use
 
 Follow the steps below to run Export.
 
-**1. Download zip folder from GitHub, unzip.**
+**1. Download zip folder from GitHub, then unzip.**
 ![Download Export](Images/Step1.png "Download Export")
 
 **2. Double-click "hazus-export-tool.py".**
 ![Open Export](Images/Step2.png "Open Export")
 
-**3. Select a study region to export from those stored in your dekstop Hazus database, as shown in the drop-down menu.**
+**3. Select a study region from the drop-down list.**
 ![Select Study Region](Images/Step3.png "Select Study Region")
 
 **4. Select summary information to export.**
@@ -129,8 +127,7 @@ Same as Hazus Export except that Batch Export cannot be run from a User's folder
 
 ## To Use
 
-Follow the steps below to run Batch Export. To ensure .py files run when double-clicked, right-click the .py file and go to Properties. Under the "General" tab next to "Opens With", make sure "python.exe" is selected. If not, click "Change" and select "python.exe" from your Python installation directory.
-
+Follow the steps below to run Batch Export. 
 
 It's recommended that if you want to rerun an HPR that you should delete or rename the previous run's output folder for that HPR. 
 
@@ -173,6 +170,6 @@ If the script fails without dropping the bk_* (where * is the name of the hpr fi
 
 ## Contact
 
-Issues can be reported through the repository on Github (https://github.com/nhrap-hazus/export)
+Please report issues through the [Export GitHub repository](https://github.com/nhrap-hazus/export)
 
-For questions contact fema-hazus-support@fema.dhs.gov
+For questions: contact fema-hazus-support@fema.dhs.gov
